@@ -1,0 +1,20 @@
+name: simple_jwt_manager
+description: "This is a package that supports authentication using the Resource Owner Password Credentials Grant defined in RFC 6749."
+version: 0.0.1
+repository: https://github.com/MasahideMori-SimpleAppli/simple_jwt_manager
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+  flutter: ">=2.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  file_state_manager: ^1.2.0
+  collection: ^1.18.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
