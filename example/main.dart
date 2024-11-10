@@ -95,7 +95,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.success:
                               // TODO: If your backend returns a token, you can store it here.
                               // final String serializedClients =
-                                  jsonEncode(ropcClient.toDict());
+                              jsonEncode(ropcClient.toDict());
                               // TODO If you want, save it here in your own way.
                               // TODO Please add a process for when user registration is complete.
                               break;
@@ -128,7 +128,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.success:
                               // TODO: If your backend returns a token, you can store it here.
                               // final String serializedClients =
-                                  jsonEncode(ropcClient.toDict());
+                              jsonEncode(ropcClient.toDict());
                               // TODO If you want, save it here in your own way.
                               // TODO Please add a process for when user registration is complete.
                               break;
