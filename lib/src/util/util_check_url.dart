@@ -5,8 +5,7 @@
 /// /// Author Masahide Mori
 ///
 /// First edition creation date 2024-11-09 20:59:07
-class UtilCheckURL{
-
+class UtilCheckURL {
   /// (en) If the specified URL is not HTTP, an exception will be thrown.
   /// Otherwise the value is returned unchanged.
   ///

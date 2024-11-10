@@ -1,5 +1,5 @@
 /// サーバーからのデータ受信時にJSONで利用されるキーを定義したクラス。
-class FJsonKeysFromServer{
+class FJsonKeysFromServer {
   static String accessToken = "access_token";
   static String tokenType = "token_type";
   static String expiresIn = "expires_in";

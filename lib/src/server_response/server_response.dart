@@ -25,8 +25,7 @@ class ServerResponse {
   /// * [resBody] :　The json decode server response body.
   /// * [error] : Null if no error occurred.
   /// It will also be null on timeout.
-  ServerResponse(
-      this.response, this.resultStatus, this.resBody, this.error);
+  ServerResponse(this.response, this.resultStatus, this.resBody, this.error);
 
   @override
   String toString() {

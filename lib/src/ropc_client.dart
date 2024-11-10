@@ -68,7 +68,7 @@ class ROPCClient {
     _revokeURL = UtilCheckURL.validateHttpsUrl(signOutURL);
     _deleteUserURL = UtilCheckURL.validateHttpsUrl(deleteUserURL);
     _timeout = timeout ?? const Duration(minutes: 1);
-    if(tokens != null){
+    if (tokens != null) {
       _accessToken = tokens["access_token"];
       _accessTokenExpireUnixMS = tokens["access_token_expire_unix_ms"];
       _scope = tokens["scope"];

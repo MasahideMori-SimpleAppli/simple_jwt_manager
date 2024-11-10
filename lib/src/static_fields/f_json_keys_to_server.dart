@@ -1,5 +1,5 @@
 /// サーバーへの送信時にJSONで利用されるキーを定義したクラス。
-class FJsonKeysToServer{
+class FJsonKeysToServer {
   static String grantType = "grant_type";
   // これはOAuthの仕様上の名前であり、実際の内容にはemailが用いられる。
   static String username = "username";
