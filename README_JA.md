@@ -1,13 +1,10 @@
 # simple_jwt_manager
 
-## 注意
-現在、本ソフトウェアは開発中です。  
-この注意書きが削除されるまでは使用できないことに注意してください。  
-
 ## 概要
-これは、[RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749#section-4.3)で定義されている、  
-「Resource Owner Password Credentials Grant」を用いた認証をサポートするためのパッケージです。
-メモリ上でのトークンの管理や、認証のためのエンドポイントへのアクセスなどをサポートします。
+これは、JWTを用いた認証をサポートするためのパッケージです。
+現在、[RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749#section-4.3)で定義されている、  
+「Resource Owner Password Credentials Grant」を用いた認証や、一般的なユーザー登録等をサポートしています。
+サインアウト処理は [RFC 7009](https://datatracker.ietf.org/doc/html/rfc7009)に従います。
 
 ## 使い方
 pub.devのExampleタブをチェックしてください。

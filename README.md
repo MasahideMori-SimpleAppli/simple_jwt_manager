@@ -3,13 +3,11 @@
 (en)Japanese ver is [here](https://github.com/MasahideMori-SimpleAppli/simple_jwt_manager/blob/main/README_JA.md).  
 (ja)この解説の日本語版は[ここ](https://github.com/MasahideMori-SimpleAppli/simple_jwt_manager/blob/main/README_JA.md)にあります。
 
-## Caution
-This software is currently under development.  
-Please note that it will not be available for use until this notice is removed.  
-
 ## Overview
-This is a package that supports authentication using the "Resource Owner Password Credentials Grant" defined in [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749#section-4.3).  
-It supports in-memory token management and access to authentication endpoints.  
+This is a package to support authentication using JWT.
+Currently, it supports authentication using the "Resource Owner Password Credentials Grant" defined
+in [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749#section-4.3), as well as general register.
+Sign-out processing follows [RFC 7009](https://datatracker.ietf.org/doc/html/rfc7009).
 
 ## Usage
 Please check out the Examples tab in pub.dev.
