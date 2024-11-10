@@ -11,8 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.2
-  file_state_manager: ^1.2.0
-  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
