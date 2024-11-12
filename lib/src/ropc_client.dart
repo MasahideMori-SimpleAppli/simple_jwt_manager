@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:simple_jwt_manager/src/server_response/enum_server_response_status.dart';
 import 'package:simple_jwt_manager/src/server_response/server_response.dart';
@@ -22,7 +23,7 @@ import 'package:simple_jwt_manager/src/util/util_check_url.dart';
 class ROPCClient {
   // static parameters
   static const String className = "ROPCClient";
-  static const int version = 1;
+  static const int version = 2;
 
   // parameters
   late final String _registerUrl;
@@ -37,6 +38,7 @@ class ROPCClient {
   String? _refreshToken;
   int? _accessTokenExpireUnixMS;
   String? _scope;
+  String? _tokenType;
 
   // methods
   /// (en) This is an initialization function. All endpoints must support HTTPS.
@@ -72,6 +74,7 @@ class ROPCClient {
       _accessToken = tokens["access_token"];
       _accessTokenExpireUnixMS = tokens["access_token_expire_unix_ms"];
       _scope = tokens["scope"];
+      _tokenType = tokens["token_type"];
       _refreshToken = tokens["refresh_token"];
     }
   }
@@ -92,6 +95,7 @@ class ROPCClient {
       "access_token": _accessToken,
       "access_token_expire_unix_ms": _accessTokenExpireUnixMS,
       "scope": _scope,
+      "token_type": _tokenType,
       "refresh_token": _refreshToken,
     };
   }
@@ -124,13 +128,20 @@ class ROPCClient {
     return _accessToken;
   }
 
-  /// (en)Returns the scope information of the held access token, if any.
+  /// (en) Returns the scope information of the held access token, if any.
   /// This is filled in only if scope information is returned by the server.
   ///
   /// (ja) 保持しているアクセストークンのスコープ情報があれば返します。
   /// これはサーバーからスコープ情報が返される場合にのみ値が入ります。
   String? getAccessTokenScopeBuff() {
     return _scope;
+  }
+
+  /// (en) Returns the type of the held access token, if any.
+  ///
+  /// (ja) 保持しているアクセストークンのタイプ情報があれば返します。
+  String? getAccessTokenType() {
+    return _tokenType;
   }
 
   /// (en) This performs the user registration process.
@@ -256,6 +267,9 @@ class ROPCClient {
     if (tokens.containsKey(FJsonKeysFromServer.scope)) {
       _scope = tokens[FJsonKeysFromServer.scope];
     }
+    if (tokens.containsKey(FJsonKeysFromServer.tokenType)) {
+      _tokenType = tokens[FJsonKeysFromServer.tokenType];
+    }
     if (tokens.containsKey(FJsonKeysFromServer.refreshToken)) {
       _refreshToken = tokens[FJsonKeysFromServer.refreshToken];
     }
@@ -288,6 +302,11 @@ class ROPCClient {
         // トークンを取得して保存
         final Map<String, dynamic> tokens = jsonDecode(response.body);
         _updateJWTBuff(tokens);
+        // 必須パラメータの返却チェック
+        if (_accessToken == null || _tokenType == null) {
+          return UtilServerResponse.otherError(
+              "OAuth 2.0 response error: missing token or token_type");
+        }
         return UtilServerResponse.success(response);
       } else {
         return UtilServerResponse.serverError(response);
@@ -373,6 +392,7 @@ class ROPCClient {
           _accessToken = null;
           _accessTokenExpireUnixMS = null;
           _scope = null;
+          _tokenType = null;
         }
         return UtilServerResponse.success(response);
       } else {
@@ -404,6 +424,7 @@ class ROPCClient {
     if (_isTokenExpired()) {
       final ServerResponse res = await _refreshAndGetNewToken();
       if (res.resultStatus != EnumSeverResponseStatus.success) {
+        debugPrint(res.error);
         return null;
       }
     }
@@ -436,6 +457,11 @@ class ROPCClient {
           // トークンを取得して保存
           final Map<String, dynamic> tokens = jsonDecode(response.body);
           _updateJWTBuff(tokens);
+          // 必須パラメータの返却チェック
+          if (_accessToken == null || _tokenType == null) {
+            return UtilServerResponse.otherError(
+                "OAuth 2.0 response error: missing token or token_type");
+          }
           return UtilServerResponse.success(response);
         } catch (e) {
           return UtilServerResponse.otherError('Invalid token format');
@@ -461,6 +487,7 @@ class ROPCClient {
     _accessToken = null;
     _accessTokenExpireUnixMS = null;
     _scope = null;
+    _tokenType = null;
     _refreshToken = null;
   }
 }
