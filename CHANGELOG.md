@@ -1,3 +1,7 @@
+## 0.0.4
+
+* The referenced library has been changed from Cupertino to Material.
+
 ## 0.0.3
 
 * Added tokenType params to ROPCClient. Please note that this will result in incompatibility when restoring compared to version 0.0.2.

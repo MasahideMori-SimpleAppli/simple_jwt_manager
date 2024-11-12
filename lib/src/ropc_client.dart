@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:simple_jwt_manager/src/server_response/enum_server_response_status.dart';
 import 'package:simple_jwt_manager/src/server_response/server_response.dart';
