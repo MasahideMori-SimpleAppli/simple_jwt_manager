@@ -102,7 +102,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumSeverResponseStatus.serverException:
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
@@ -135,7 +135,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumSeverResponseStatus.serverException:
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
@@ -162,7 +162,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumSeverResponseStatus.serverException:
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
@@ -191,7 +191,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumSeverResponseStatus.serverException:
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:

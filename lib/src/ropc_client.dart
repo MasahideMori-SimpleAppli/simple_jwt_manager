@@ -23,7 +23,7 @@ import 'package:simple_jwt_manager/src/util/util_check_url.dart';
 class ROPCClient {
   // static parameters
   static const String className = "ROPCClient";
-  static const int version = 2;
+  static const int version = 3;
 
   // parameters
   late final String _registerUrl;
@@ -204,7 +204,7 @@ class ROPCClient {
           return UtilServerResponse.success(response);
         }
       } else {
-        return UtilServerResponse.serverError(response);
+        return UtilServerResponse.serverException(response);
       }
     } on TimeoutException catch (_) {
       return UtilServerResponse.timeout();
@@ -245,7 +245,7 @@ class ROPCClient {
         _clearToken();
         return UtilServerResponse.success(response);
       } else {
-        return UtilServerResponse.serverError(response);
+        return UtilServerResponse.serverException(response);
       }
     } on TimeoutException catch (_) {
       return UtilServerResponse.timeout();
@@ -309,7 +309,7 @@ class ROPCClient {
         }
         return UtilServerResponse.success(response);
       } else {
-        return UtilServerResponse.serverError(response);
+        return UtilServerResponse.serverException(response);
       }
     } on TimeoutException catch (_) {
       return UtilServerResponse.timeout();
@@ -335,7 +335,7 @@ class ROPCClient {
       case EnumSeverResponseStatus.success:
         return await signOut(isRefreshToken: false);
       case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverError:
+      case EnumSeverResponseStatus.serverException:
       case EnumSeverResponseStatus.otherError:
       case EnumSeverResponseStatus.signInRequired:
         return res;
@@ -396,7 +396,7 @@ class ROPCClient {
         }
         return UtilServerResponse.success(response);
       } else {
-        return UtilServerResponse.serverError(response);
+        return UtilServerResponse.serverException(response);
       }
     } on TimeoutException catch (_) {
       return UtilServerResponse.timeout();
@@ -424,7 +424,7 @@ class ROPCClient {
     if (_isTokenExpired()) {
       final ServerResponse res = await _refreshAndGetNewToken();
       if (res.resultStatus != EnumSeverResponseStatus.success) {
-        debugPrint(res.error);
+        debugPrint(res.errorDetail);
         return null;
       }
     }
@@ -472,7 +472,7 @@ class ROPCClient {
           _clearToken();
           return UtilServerResponse.signInRequired();
         } else {
-          return UtilServerResponse.serverError(response);
+          return UtilServerResponse.serverException(response);
         }
       }
     } on TimeoutException catch (_) {

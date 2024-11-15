@@ -1,11 +1,11 @@
 /// (en) To simplify responses from the server,
 /// This is an enum that classifies the response content into
 /// five types:
-/// successful processing, timeout, server error,
-/// other error (including communication error), SignIn required.
+/// successful processing, timeout(connection or response), server exception,
+/// other error, SignIn required.
 ///
 /// (ja) サーバーからの応答を単純化するために、
-/// 応答内容を処理成功、タイムアウト、サーバーエラー、その他のエラー（通信エラーを含む）、
+/// 応答内容を処理成功、タイムアウト（通信または応答）、サーバーエラー、その他のエラー、
 /// 要signInの５種類に分類するためのenumです。
 ///
 /// Author Masahide Mori
@@ -14,7 +14,7 @@
 enum EnumSeverResponseStatus {
   success,
   timeout,
-  serverError,
+  serverException,
   otherError,
   signInRequired,
 }
