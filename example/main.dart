@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 import 'dart:convert';
@@ -11,9 +13,9 @@ const String signOutURL = "https://your end point url";
 const String deleteUserURL = "https://your end point url";
 
 void main() async {
-  Map<String, dynamic>? tokens;
+  Map<String, dynamic>? savedData;
   // TODO: If necessary, restore the token in your own way.
-  // tokens = jsonDecode(The token from storage etc.);
+  // savedData = jsonDecode(The token from storage etc.);
   // In practical use, it may be useful to wrap ROPCClient in a singleton class.
   // Because ROPCClient class is not a singleton,
   // you can manage multiple tokens separately in multiple ROPCClient.
@@ -23,8 +25,12 @@ void main() async {
       refreshURL: refreshURL,
       signOutURL: signOutURL,
       deleteUserURL: deleteUserURL,
-      timeout: const Duration(minutes: 1),
-      tokens: tokens);
+      badCertificateCallback: (X509Certificate cert, String host, int port) {
+        // Returns true if you are using a local server
+        // that uses a self-signed certificate.
+        return false;
+      },
+      savedData: savedData);
   runApp(const MyApp());
 }
 

@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:simple_jwt_manager/src/server_response/enum_server_response_status.dart';
-import 'package:simple_jwt_manager/src/server_response/server_response.dart';
+import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 import 'package:simple_jwt_manager/src/server_response/util_server_response.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_grant_type.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_json_keys_from_server.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart';
-import 'package:simple_jwt_manager/src/util/util_check_url.dart';
 
 /// (en) This class manages JWT tokens and controls login, as defined in
 /// the Resource Owner Password Credentials Grant defined in RFC 6749.
@@ -31,7 +29,10 @@ class ROPCClient {
   late final String _refreshUrl;
   late final String _revokeURL;
   late final String _deleteUserURL;
-  late final Duration _timeout;
+  late final bool Function(X509Certificate cert, String host, int port)?
+      _badCertificateCallback;
+  late final Duration _connectionTimeout;
+  late final Duration _responseTimeout;
 
   // tokens
   String? _accessToken;
@@ -54,7 +55,9 @@ class ROPCClient {
   /// * [signOutURL] : The URL for signOut (revoke) the token.
   /// * [deleteUserURL] : This is the URL for deleting a user.
   /// * [timeout] : Timeout period for server access. Default is 1 min.
-  /// * [tokens] : If there is token information previously saved by
+  /// * [badCertificateCallback] : Returns true if you are using a local server
+  /// that uses a self-signed certificate.
+  /// * [savedData] : If there is token information previously saved by
   /// this class's toDict function, you can restore the token by setting it.
   ROPCClient(
       {required String registerURL,
@@ -62,20 +65,25 @@ class ROPCClient {
       required String refreshURL,
       required String signOutURL,
       required String deleteUserURL,
-      Duration? timeout,
-      Map<String, dynamic>? tokens}) {
+      Duration? connectionTimeout,
+      Duration? responseTimeout,
+      bool Function(X509Certificate cert, String host, int port)?
+          badCertificateCallback,
+      Map<String, dynamic>? savedData}) {
     _registerUrl = UtilCheckURL.validateHttpsUrl(registerURL);
     _signInUrl = UtilCheckURL.validateHttpsUrl(signInURL);
     _refreshUrl = UtilCheckURL.validateHttpsUrl(refreshURL);
     _revokeURL = UtilCheckURL.validateHttpsUrl(signOutURL);
     _deleteUserURL = UtilCheckURL.validateHttpsUrl(deleteUserURL);
-    _timeout = timeout ?? const Duration(minutes: 1);
-    if (tokens != null) {
-      _accessToken = tokens["access_token"];
-      _accessTokenExpireUnixMS = tokens["access_token_expire_unix_ms"];
-      _scope = tokens["scope"];
-      _tokenType = tokens["token_type"];
-      _refreshToken = tokens["refresh_token"];
+    _badCertificateCallback = badCertificateCallback;
+    _connectionTimeout = connectionTimeout ?? const Duration(seconds: 10);
+    _responseTimeout = responseTimeout ?? const Duration(minutes: 1);
+    if (savedData != null) {
+      _accessToken = savedData["access_token"];
+      _accessTokenExpireUnixMS = savedData["access_token_expire_unix_ms"];
+      _scope = savedData["scope"];
+      _tokenType = savedData["token_type"];
+      _refreshToken = savedData["refresh_token"];
     }
   }
 
@@ -178,38 +186,36 @@ class ROPCClient {
       String? name,
       String? nickname,
       Map<String, dynamic>? option}) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse(_registerUrl),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              FJsonKeysToServer.username: email,
-              FJsonKeysToServer.password: password,
-              FJsonKeysToServer.scope: scope,
-              FJsonKeysToServer.name: name,
-              FJsonKeysToServer.nickname: nickname,
-              FJsonKeysToServer.option: option
-            }),
-          )
-          .timeout(_timeout);
-      if (response.statusCode == 200) {
+    final r = await UtilHttpsClient.post(
+        _registerUrl,
+        {
+          FJsonKeysToServer.username: email,
+          FJsonKeysToServer.password: password,
+          FJsonKeysToServer.scope: scope,
+          FJsonKeysToServer.name: name,
+          FJsonKeysToServer.nickname: nickname,
+          FJsonKeysToServer.option: option
+        },
+        EnumPostEncodeType.json,
+        badCertificateCallback: _badCertificateCallback,
+        connectionTimeout: _connectionTimeout,
+        responseTimeout: _responseTimeout);
+    switch (r.resultStatus) {
+      case EnumSeverResponseStatus.success:
         try {
           // サーバーがトークンを返す仕様の場合は取得してログイン状態にする
-          final Map<String, dynamic> tokens = jsonDecode(response.body);
+          final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
           _updateJWTBuff(tokens);
-          return UtilServerResponse.success(response);
+          return r;
         } catch (e) {
           // サーバーがトークンを返さない、または戻り値がJSONでは無いような場合。
-          return UtilServerResponse.success(response);
+          return r;
         }
-      } else {
-        return UtilServerResponse.serverException(response);
-      }
-    } on TimeoutException catch (_) {
-      return UtilServerResponse.timeout();
-    } catch (e) {
-      return UtilServerResponse.otherError(e);
+      case EnumSeverResponseStatus.timeout:
+      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.otherError:
+      case EnumSeverResponseStatus.signInRequired:
+        return r;
     }
   }
 
@@ -229,28 +235,26 @@ class ROPCClient {
   /// * [option] : Other optional parameters.
   Future<ServerResponse> deleteUser(String email, String password,
       {Map<String, dynamic>? option}) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse(_deleteUserURL),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              FJsonKeysToServer.username: email,
-              FJsonKeysToServer.password: password,
-              FJsonKeysToServer.option: option
-            }),
-          )
-          .timeout(_timeout);
-      if (response.statusCode == 200) {
+    final r = await UtilHttpsClient.post(
+        _deleteUserURL,
+        {
+          FJsonKeysToServer.username: email,
+          FJsonKeysToServer.password: password,
+          FJsonKeysToServer.option: option
+        },
+        EnumPostEncodeType.json,
+        badCertificateCallback: _badCertificateCallback,
+        connectionTimeout: _connectionTimeout,
+        responseTimeout: _responseTimeout);
+    switch (r.resultStatus) {
+      case EnumSeverResponseStatus.success:
         _clearToken();
-        return UtilServerResponse.success(response);
-      } else {
-        return UtilServerResponse.serverException(response);
-      }
-    } on TimeoutException catch (_) {
-      return UtilServerResponse.timeout();
-    } catch (e) {
-      return UtilServerResponse.otherError(e);
+        return r;
+      case EnumSeverResponseStatus.timeout:
+      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.otherError:
+      case EnumSeverResponseStatus.signInRequired:
+        return r;
     }
   }
 
@@ -259,6 +263,9 @@ class ROPCClient {
     final int nowUnixTimeMS = DateTime.now().millisecondsSinceEpoch;
     if (tokens.containsKey(FJsonKeysFromServer.accessToken)) {
       _accessToken = tokens[FJsonKeysFromServer.accessToken];
+      _accessTokenExpireUnixMS = null;
+      _scope = null;
+      _tokenType = null;
     }
     if (tokens.containsKey(FJsonKeysFromServer.expiresIn)) {
       _accessTokenExpireUnixMS = nowUnixTimeMS +
@@ -287,34 +294,34 @@ class ROPCClient {
   /// in space separated format, e.g. read write, user:follow, etc.
   Future<ServerResponse> signIn(String email, String password,
       {String? scope}) async {
-    try {
-      final response = await http.post(
-        Uri.parse(_signInUrl),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
+    final r = await UtilHttpsClient.post(
+        _signInUrl,
+        {
           FJsonKeysToServer.grantType: FGrantType.password,
           FJsonKeysToServer.username: email,
           FJsonKeysToServer.password: password,
           FJsonKeysToServer.scope: scope,
         },
-      ).timeout(_timeout);
-      if (response.statusCode == 200) {
+        EnumPostEncodeType.urlEncoded,
+        badCertificateCallback: _badCertificateCallback,
+        connectionTimeout: _connectionTimeout,
+        responseTimeout: _responseTimeout);
+    switch (r.resultStatus) {
+      case EnumSeverResponseStatus.success:
         // トークンを取得して保存
-        final Map<String, dynamic> tokens = jsonDecode(response.body);
+        final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
         _updateJWTBuff(tokens);
         // 必須パラメータの返却チェック
         if (_accessToken == null || _tokenType == null) {
           return UtilServerResponse.otherError(
               "OAuth 2.0 response error: missing token or token_type");
         }
-        return UtilServerResponse.success(response);
-      } else {
-        return UtilServerResponse.serverException(response);
-      }
-    } on TimeoutException catch (_) {
-      return UtilServerResponse.timeout();
-    } catch (e) {
-      return UtilServerResponse.otherError(e);
+        return r;
+      case EnumSeverResponseStatus.timeout:
+      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.otherError:
+      case EnumSeverResponseStatus.signInRequired:
+        return r;
     }
   }
 
@@ -377,15 +384,13 @@ class ROPCClient {
         FJsonKeysToServer.accessToken: _accessToken,
       };
     }
-    try {
-      final response = await http
-          .post(
-            Uri.parse(_revokeURL),
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: target,
-          )
-          .timeout(_timeout);
-      if (response.statusCode == 200) {
+    final r = await UtilHttpsClient.post(
+        _revokeURL, target, EnumPostEncodeType.urlEncoded,
+        badCertificateCallback: _badCertificateCallback,
+        connectionTimeout: _connectionTimeout,
+        responseTimeout: _responseTimeout);
+    switch (r.resultStatus) {
+      case EnumSeverResponseStatus.success:
         if (isRefreshToken) {
           _refreshToken = null;
         } else {
@@ -394,14 +399,12 @@ class ROPCClient {
           _scope = null;
           _tokenType = null;
         }
-        return UtilServerResponse.success(response);
-      } else {
-        return UtilServerResponse.serverException(response);
-      }
-    } on TimeoutException catch (_) {
-      return UtilServerResponse.timeout();
-    } catch (e) {
-      return UtilServerResponse.otherError(e);
+        return r;
+      case EnumSeverResponseStatus.timeout:
+      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.otherError:
+      case EnumSeverResponseStatus.signInRequired:
+        return r;
     }
   }
 
@@ -442,43 +445,44 @@ class ROPCClient {
     if (_refreshToken == null) {
       return UtilServerResponse.signInRequired();
     }
-    // サーバーからトークンを取得
-    try {
-      final response = await http.post(
-        Uri.parse(_refreshUrl),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
+    final r = await UtilHttpsClient.post(
+        _refreshUrl,
+        {
           FJsonKeysToServer.grantType: FGrantType.refreshToken,
           FJsonKeysToServer.refreshToken: _refreshToken,
         },
-      ).timeout(_timeout);
-      if (response.statusCode == 200) {
+        EnumPostEncodeType.urlEncoded,
+        badCertificateCallback: _badCertificateCallback,
+        connectionTimeout: _connectionTimeout,
+        responseTimeout: _responseTimeout);
+    switch (r.resultStatus) {
+      case EnumSeverResponseStatus.success:
         try {
           // トークンを取得して保存
-          final Map<String, dynamic> tokens = jsonDecode(response.body);
+          final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
           _updateJWTBuff(tokens);
           // 必須パラメータの返却チェック
           if (_accessToken == null || _tokenType == null) {
             return UtilServerResponse.otherError(
                 "OAuth 2.0 response error: missing token or token_type");
           }
-          return UtilServerResponse.success(response);
+          return r;
         } catch (e) {
           return UtilServerResponse.otherError('Invalid token format');
         }
-      } else {
-        // リフレッシュトークンが期限切れの場合、クライアント側のトークンをクリアする
-        if (response.statusCode == 401) {
-          _clearToken();
-          return UtilServerResponse.signInRequired();
-        } else {
-          return UtilServerResponse.serverException(response);
+      case EnumSeverResponseStatus.serverException:
+        if (r.response != null) {
+          // リフレッシュトークンが期限切れの場合、クライアント側のトークンをクリアする
+          if (r.response!.statusCode == 401) {
+            _clearToken();
+            return UtilServerResponse.signInRequired();
+          }
         }
-      }
-    } on TimeoutException catch (_) {
-      return UtilServerResponse.timeout();
-    } catch (e) {
-      return UtilServerResponse.otherError(e);
+        return r;
+      case EnumSeverResponseStatus.timeout:
+      case EnumSeverResponseStatus.otherError:
+      case EnumSeverResponseStatus.signInRequired:
+        return r;
     }
   }
 

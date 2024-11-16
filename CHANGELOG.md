@@ -1,3 +1,8 @@
+## 0.0.5
+
+* Added support for local servers using self-signed certificates.
+* It is now possible to specify more precise timeouts.
+
 ## 0.0.4
 
 * The referenced library has been changed from Cupertino to Material.
