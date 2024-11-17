@@ -1,3 +1,8 @@
+## 0.0.9
+
+* The sample code has been improved.
+* Added ROPCClientForNative and UtilHttpsForNative classes. These are classes with more powerful options that work Non Flutter Web app. This is a modified version of the previous implementation.
+
 ## 0.0.8
 
 * The sample code has been improved.

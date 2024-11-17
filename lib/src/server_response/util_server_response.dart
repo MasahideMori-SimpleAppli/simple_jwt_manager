@@ -38,8 +38,9 @@ class UtilServerResponse {
   /// (ja) タイムアウト時のサーバー応答オブジェクトを作成します。
   ///
   /// * [e] : The error message.
-  static ServerResponse timeout(String e) {
-    return ServerResponse(null, EnumSeverResponseStatus.timeout, null, e);
+  static ServerResponse timeout(Object e) {
+    return ServerResponse(
+        null, EnumSeverResponseStatus.timeout, null, e.toString());
   }
 
   /// (en) Creates a server response object when authentication is required.

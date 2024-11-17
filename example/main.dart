@@ -226,8 +226,9 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle other error case.
                               break;
                             case EnumSeverResponseStatus.signInRequired:
-                              // That doesn't usually happen here.
-                              throw Exception();
+                              // TODO:
+                              debugPrint("SignIn required");
+                              break;
                           }
                         });
                       },
@@ -238,6 +239,7 @@ class _MyAppState extends State<MyApp> {
                     child: ElevatedButton(
                       onPressed: () async {
                         String? jwt = await ropcClient.getToken();
+                        debugPrint("token: ${jwt ?? "null"}");
                         if (jwt != null) {
                           // TODO Add your implementation to do some operation in the backend.
                         } else {
