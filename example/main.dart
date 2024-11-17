@@ -214,7 +214,7 @@ class _MyAppState extends State<MyApp> {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumSeverResponseStatus.success:
-                              // delete user completed.
+                              // completed.
                               break;
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
