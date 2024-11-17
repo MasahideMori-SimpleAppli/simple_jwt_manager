@@ -1,3 +1,7 @@
+## 0.0.8
+
+* The sample code has been improved.
+
 ## 0.0.7
 
 * Fixed a bug with posting using urlEncoded.

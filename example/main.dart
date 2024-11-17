@@ -57,7 +57,7 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Simple JWT Manager Example'),
           backgroundColor: const Color.fromARGB(255, 0, 255, 0),
         ),
-        backgroundColor: const Color.fromARGB(255, 33, 33, 33),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         body: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
