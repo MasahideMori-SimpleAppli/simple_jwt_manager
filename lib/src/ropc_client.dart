@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
@@ -29,10 +28,7 @@ class ROPCClient {
   late final String _refreshUrl;
   late final String _revokeURL;
   late final String _deleteUserURL;
-  late final bool Function(X509Certificate cert, String host, int port)?
-      _badCertificateCallback;
-  late final Duration _connectionTimeout;
-  late final Duration _responseTimeout;
+  late final Duration _timeout;
 
   // tokens
   String? _accessToken;
@@ -55,8 +51,6 @@ class ROPCClient {
   /// * [signOutURL] : The URL for signOut (revoke) the token.
   /// * [deleteUserURL] : This is the URL for deleting a user.
   /// * [timeout] : Timeout period for server access. Default is 1 min.
-  /// * [badCertificateCallback] : Returns true if you are using a local server
-  /// that uses a self-signed certificate.
   /// * [savedData] : If there is token information previously saved by
   /// this class's toDict function, you can restore the token by setting it.
   ROPCClient(
@@ -65,19 +59,14 @@ class ROPCClient {
       required String refreshURL,
       required String signOutURL,
       required String deleteUserURL,
-      Duration? connectionTimeout,
-      Duration? responseTimeout,
-      bool Function(X509Certificate cert, String host, int port)?
-          badCertificateCallback,
+      Duration? timeout,
       Map<String, dynamic>? savedData}) {
     _registerUrl = UtilCheckURL.validateHttpsUrl(registerURL);
     _signInUrl = UtilCheckURL.validateHttpsUrl(signInURL);
     _refreshUrl = UtilCheckURL.validateHttpsUrl(refreshURL);
     _revokeURL = UtilCheckURL.validateHttpsUrl(signOutURL);
     _deleteUserURL = UtilCheckURL.validateHttpsUrl(deleteUserURL);
-    _badCertificateCallback = badCertificateCallback;
-    _connectionTimeout = connectionTimeout ?? const Duration(seconds: 10);
-    _responseTimeout = responseTimeout ?? const Duration(minutes: 1);
+    _timeout = timeout ?? const Duration(minutes: 1);
     if (savedData != null) {
       _accessToken = savedData["access_token"];
       _accessTokenExpireUnixMS = savedData["access_token_expire_unix_ms"];
@@ -186,7 +175,7 @@ class ROPCClient {
       String? name,
       String? nickname,
       Map<String, dynamic>? option}) async {
-    final r = await UtilHttpsClient.post(
+    final r = await UtilHttps.post(
         _registerUrl,
         {
           FJsonKeysToServer.username: email,
@@ -197,9 +186,7 @@ class ROPCClient {
           FJsonKeysToServer.option: option
         },
         EnumPostEncodeType.json,
-        badCertificateCallback: _badCertificateCallback,
-        connectionTimeout: _connectionTimeout,
-        responseTimeout: _responseTimeout);
+        timeout: _timeout);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         try {
@@ -212,7 +199,7 @@ class ROPCClient {
           return r;
         }
       case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.serverError:
       case EnumSeverResponseStatus.otherError:
       case EnumSeverResponseStatus.signInRequired:
         return r;
@@ -235,7 +222,7 @@ class ROPCClient {
   /// * [option] : Other optional parameters.
   Future<ServerResponse> deleteUser(String email, String password,
       {Map<String, dynamic>? option}) async {
-    final r = await UtilHttpsClient.post(
+    final r = await UtilHttps.post(
         _deleteUserURL,
         {
           FJsonKeysToServer.username: email,
@@ -243,15 +230,13 @@ class ROPCClient {
           FJsonKeysToServer.option: option
         },
         EnumPostEncodeType.json,
-        badCertificateCallback: _badCertificateCallback,
-        connectionTimeout: _connectionTimeout,
-        responseTimeout: _responseTimeout);
+        timeout: _timeout);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         _clearToken();
         return r;
       case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.serverError:
       case EnumSeverResponseStatus.otherError:
       case EnumSeverResponseStatus.signInRequired:
         return r;
@@ -294,7 +279,7 @@ class ROPCClient {
   /// in space separated format, e.g. read write, user:follow, etc.
   Future<ServerResponse> signIn(String email, String password,
       {String? scope}) async {
-    final r = await UtilHttpsClient.post(
+    final r = await UtilHttps.post(
         _signInUrl,
         {
           FJsonKeysToServer.grantType: FGrantType.password,
@@ -303,9 +288,7 @@ class ROPCClient {
           FJsonKeysToServer.scope: scope,
         },
         EnumPostEncodeType.urlEncoded,
-        badCertificateCallback: _badCertificateCallback,
-        connectionTimeout: _connectionTimeout,
-        responseTimeout: _responseTimeout);
+        timeout: _timeout);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         // トークンを取得して保存
@@ -318,7 +301,7 @@ class ROPCClient {
         }
         return r;
       case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.serverError:
       case EnumSeverResponseStatus.otherError:
       case EnumSeverResponseStatus.signInRequired:
         return r;
@@ -342,7 +325,7 @@ class ROPCClient {
       case EnumSeverResponseStatus.success:
         return await signOut(isRefreshToken: false);
       case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.serverError:
       case EnumSeverResponseStatus.otherError:
       case EnumSeverResponseStatus.signInRequired:
         return res;
@@ -384,11 +367,9 @@ class ROPCClient {
         FJsonKeysToServer.accessToken: _accessToken,
       };
     }
-    final r = await UtilHttpsClient.post(
+    final r = await UtilHttps.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
-        badCertificateCallback: _badCertificateCallback,
-        connectionTimeout: _connectionTimeout,
-        responseTimeout: _responseTimeout);
+        timeout: _timeout);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         if (isRefreshToken) {
@@ -401,7 +382,7 @@ class ROPCClient {
         }
         return r;
       case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.serverError:
       case EnumSeverResponseStatus.otherError:
       case EnumSeverResponseStatus.signInRequired:
         return r;
@@ -425,7 +406,7 @@ class ROPCClient {
       return null;
     }
     if (_isTokenExpired()) {
-      final ServerResponse res = await _refreshAndGetNewToken();
+      final ServerResponse res = await refreshAndGetNewToken();
       if (res.resultStatus != EnumSeverResponseStatus.success) {
         debugPrint(res.errorDetail);
         return null;
@@ -440,21 +421,25 @@ class ROPCClient {
     return DateTime.now().millisecondsSinceEpoch > _accessTokenExpireUnixMS!;
   }
 
-  /// リフレッシュトークンを使用して新しいトークンを取得し、キャッシュします。
-  Future<ServerResponse> _refreshAndGetNewToken() async {
+  /// (en) This method should not be called directly except when debugging.
+  /// Instead, use getToken.
+  /// This uses the refresh token to obtain a new token and caches it.
+  ///
+  /// (ja) このメソッドは、通常は直接呼び出さないでください。
+  /// 代わりに、getTokenを利用してください。
+  /// これはリフレッシュトークンを使用して新しいトークンを取得し、キャッシュします。
+  Future<ServerResponse> refreshAndGetNewToken() async {
     if (_refreshToken == null) {
       return UtilServerResponse.signInRequired();
     }
-    final r = await UtilHttpsClient.post(
+    final r = await UtilHttps.post(
         _refreshUrl,
         {
           FJsonKeysToServer.grantType: FGrantType.refreshToken,
           FJsonKeysToServer.refreshToken: _refreshToken,
         },
         EnumPostEncodeType.urlEncoded,
-        badCertificateCallback: _badCertificateCallback,
-        connectionTimeout: _connectionTimeout,
-        responseTimeout: _responseTimeout);
+        timeout: _timeout);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         try {
@@ -470,7 +455,7 @@ class ROPCClient {
         } catch (e) {
           return UtilServerResponse.otherError('Invalid token format');
         }
-      case EnumSeverResponseStatus.serverException:
+      case EnumSeverResponseStatus.serverError:
         if (r.response != null) {
           // リフレッシュトークンが期限切れの場合、クライアント側のトークンをクリアする
           if (r.response!.statusCode == 401) {

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 import 'dart:convert';
@@ -25,11 +23,6 @@ void main() async {
       refreshURL: refreshURL,
       signOutURL: signOutURL,
       deleteUserURL: deleteUserURL,
-      badCertificateCallback: (X509Certificate cert, String host, int port) {
-        // Returns true if you are using a local server
-        // that uses a self-signed certificate.
-        return false;
-      },
       savedData: savedData);
   runApp(const MyApp());
 }
@@ -108,7 +101,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverException:
+                            case EnumSeverResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
@@ -141,7 +134,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverException:
+                            case EnumSeverResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
@@ -168,7 +161,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverException:
+                            case EnumSeverResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
@@ -197,7 +190,7 @@ class _MyAppState extends State<MyApp> {
                             case EnumSeverResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverException:
+                            case EnumSeverResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:

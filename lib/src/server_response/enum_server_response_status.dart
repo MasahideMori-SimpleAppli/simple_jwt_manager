@@ -1,7 +1,7 @@
 /// (en) To simplify responses from the server,
 /// This is an enum that classifies the response content into
 /// five types:
-/// successful processing, timeout(connection or response), server exception,
+/// successful processing, timeout(connection or response), server error,
 /// other error, SignIn required.
 ///
 /// (ja) サーバーからの応答を単純化するために、
@@ -14,7 +14,7 @@
 enum EnumSeverResponseStatus {
   success,
   timeout,
-  serverException,
+  serverError,
   otherError,
   signInRequired,
 }

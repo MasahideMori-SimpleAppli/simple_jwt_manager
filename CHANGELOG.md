@@ -1,3 +1,7 @@
+## 0.0.6
+
+* Some features have been removed to resolve issues with not working on Flutter web.
+
 ## 0.0.5
 
 * Added support for local servers using self-signed certificates.

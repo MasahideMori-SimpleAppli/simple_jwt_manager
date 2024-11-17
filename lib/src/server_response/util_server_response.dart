@@ -17,19 +17,19 @@ class UtilServerResponse {
         jsonDecode(response.body), null);
   }
 
-  /// (en) Creates a server response object in case of a server exception.
+  /// (en) Creates a server response object in case of a server error.
   ///
-  /// (ja) サーバー例外時のサーバー応答オブジェクトを作成します。
-  static ServerResponse serverException(http.Response response) {
+  /// (ja) サーバーエラー時のサーバー応答オブジェクトを作成します。
+  static ServerResponse serverError(http.Response response) {
     String errorDescription = "";
     Map<String, dynamic> errorBody = {};
     try {
       errorBody = jsonDecode(response.body);
       errorDescription = errorBody["error_description"];
     } catch (e) {
-      errorDescription = "Server exception. ${response.body}";
+      errorDescription = "Server error. ${response.body}";
     }
-    return ServerResponse(response, EnumSeverResponseStatus.serverException,
+    return ServerResponse(response, EnumSeverResponseStatus.serverError,
         errorBody, errorDescription);
   }
 
@@ -37,17 +37,9 @@ class UtilServerResponse {
   ///
   /// (ja) タイムアウト時のサーバー応答オブジェクトを作成します。
   ///
-  /// * [isConnectionTimeout] : If true, connection timeout.
-  /// other is response timeout.
   /// * [e] : The error message.
-  static ServerResponse timeout(bool isConnectionTimeout, String e) {
-    return ServerResponse(
-        null,
-        EnumSeverResponseStatus.timeout,
-        null,
-        isConnectionTimeout
-            ? "Connection timeout. $e"
-            : "Response timeout. $e");
+  static ServerResponse timeout(String e) {
+    return ServerResponse(null, EnumSeverResponseStatus.timeout, null, e);
   }
 
   /// (en) Creates a server response object when authentication is required.
