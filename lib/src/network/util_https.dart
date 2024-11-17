@@ -34,7 +34,8 @@ class UtilHttps {
     switch (type) {
       case EnumPostEncodeType.urlEncoded:
         headers['Content-Type'] = 'application/x-www-form-urlencoded';
-        return customPost(url, body, headers, timeout: timeout);
+        return customPost(url, Uri(queryParameters: body).query, headers,
+            timeout: timeout);
       case EnumPostEncodeType.json:
         headers['Content-Type'] = 'application/json';
         return customPost(url, jsonEncode(body), headers, timeout: timeout);

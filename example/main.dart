@@ -105,7 +105,7 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
-                              // TODO: Handle other error (including communication error) case.
+                              // TODO: Handle other error case.
                               break;
                             case EnumSeverResponseStatus.signInRequired:
                               // That doesn't usually happen here.
@@ -138,7 +138,7 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
-                              // TODO: Handle other error (including communication error) case.
+                              // TODO: Handle other error case.
                               break;
                             case EnumSeverResponseStatus.signInRequired:
                               // That doesn't usually happen here.
@@ -165,7 +165,7 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
-                              // TODO: Handle other error (including communication error) case.
+                              // TODO: Handle other error case.
                               break;
                             case EnumSeverResponseStatus.signInRequired:
                               // That doesn't usually happen here.
@@ -194,7 +194,7 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle server side error case.
                               break;
                             case EnumSeverResponseStatus.otherError:
-                              // TODO: Handle other error (including communication error) case.
+                              // TODO: Handle other error case.
                               break;
                             case EnumSeverResponseStatus.signInRequired:
                               // That doesn't usually happen here.
@@ -203,6 +203,35 @@ class _MyAppState extends State<MyApp> {
                         });
                       },
                       child: const Text('DeleteUser'),
+                    )),
+                Container(
+                    margin: const EdgeInsets.fromLTRB(0, 12, 0, 0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ropcClient
+                            .refreshAndGetNewToken()
+                            .then((ServerResponse v) {
+                          debugPrint(v.toString());
+                          switch (v.resultStatus) {
+                            case EnumSeverResponseStatus.success:
+                              // delete user completed.
+                              break;
+                            case EnumSeverResponseStatus.timeout:
+                              // TODO: What happens when a timeout occurs.
+                              break;
+                            case EnumSeverResponseStatus.serverError:
+                              // TODO: Handle server side error case.
+                              break;
+                            case EnumSeverResponseStatus.otherError:
+                              // TODO: Handle other error case.
+                              break;
+                            case EnumSeverResponseStatus.signInRequired:
+                              // That doesn't usually happen here.
+                              throw Exception();
+                          }
+                        });
+                      },
+                      child: const Text('Refresh token(debug only)'),
                     )),
                 Container(
                     margin: const EdgeInsets.fromLTRB(0, 12, 0, 0),

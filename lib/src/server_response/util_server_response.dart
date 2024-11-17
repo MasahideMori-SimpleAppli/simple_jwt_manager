@@ -50,10 +50,9 @@ class UtilServerResponse {
         null, EnumSeverResponseStatus.signInRequired, null, null);
   }
 
-  /// (en) Creates a server response object for any other error that occurs,
-  /// including communication errors.
+  /// (en) Creates a server response object for any other error.
   ///
-  /// (ja) 通信エラーを含む、その他のエラー発生時のサーバー応答オブジェクトを作成します。
+  /// (ja) その他のエラー発生時のサーバー応答オブジェクトを作成します。
   static ServerResponse otherError(Object e) {
     return ServerResponse(
         null, EnumSeverResponseStatus.otherError, null, e.toString());

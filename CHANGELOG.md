@@ -1,3 +1,8 @@
+## 0.0.7
+
+* Fixed a bug with posting using urlEncoded.
+* Regarding self-signed certificates, the package does not appear to be able to work around the issue, so support for this has been removed.
+
 ## 0.0.6
 
 * Some features have been removed to resolve issues with not working on Flutter web.
