@@ -24,7 +24,6 @@ class UtilHttps {
     Map<String, dynamic> body,
     EnumPostEncodeType type, {
     String? jwt,
-    Duration connectionTimeout = const Duration(seconds: 10),
     Duration timeout = const Duration(seconds: 10),
   }) async {
     Map<String, String> headers = {};
