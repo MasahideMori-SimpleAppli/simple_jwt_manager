@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
-import 'package:simple_jwt_manager/src/server_response/util_server_response.dart';
 
 import '../../simple_jwt_manager.dart';
 

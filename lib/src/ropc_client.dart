@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
-import 'package:simple_jwt_manager/src/server_response/util_server_response.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_grant_type.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_json_keys_from_server.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart';

@@ -1,3 +1,7 @@
+## 0.0.11
+
+* The UtilServerResponse class is now public.
+
 ## 0.0.10
 
 * Removed unused argument in UtilHttps.post.

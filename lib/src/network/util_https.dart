@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:simple_jwt_manager/src/server_response/util_server_response.dart';
 
 import '../../simple_jwt_manager.dart';
 
