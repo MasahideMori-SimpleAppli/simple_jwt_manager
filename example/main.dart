@@ -1,14 +1,21 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 import 'dart:convert';
 
-late final ROPCClient ropcClient;
+// TODO select client version.
+// late final ROPCClient ropcClient; // web or native
+late final ROPCClientForNative
+    ropcClient; // native, use self-signed certificates
+
 // TODO: Please make sure to rewrite this URL.
 const String registerURL = "https://your end point url";
 const String signInURL = "https://your end point url";
 const String refreshURL = "https://your end point url";
 const String signOutURL = "https://your end point url";
 const String deleteUserURL = "https://your end point url";
+// URL for posting data with JWT in auth header.
+const String postingDataURL = "https://your end point url";
 
 void main() async {
   Map<String, dynamic>? savedData;
@@ -17,13 +24,32 @@ void main() async {
   // In practical use, it may be useful to wrap ROPCClient in a singleton class.
   // Because ROPCClient class is not a singleton,
   // you can manage multiple tokens separately in multiple ROPCClient.
-  ropcClient = ROPCClient(
+
+  // For web or native device.
+  // ropcClient = ROPCClient(
+  //     registerURL: registerURL,
+  //     signInURL: signInURL,
+  //     refreshURL: refreshURL,
+  //     signOutURL: signOutURL,
+  //     deleteUserURL: deleteUserURL,
+  //     savedData: savedData);
+
+  // For native device only.
+  // This version can support self-signed certificates.
+  ropcClient = ROPCClientForNative(
       registerURL: registerURL,
       signInURL: signInURL,
       refreshURL: refreshURL,
       signOutURL: signOutURL,
       deleteUserURL: deleteUserURL,
+      badCertificateCallback: (X509Certificate cert, String host, int port) {
+        // TODO
+        // The condition is checked here, and if it returns true,
+        // self-signed certificates are allowed.
+        return true;
+      },
       savedData: savedData);
+
   runApp(const MyApp());
 }
 
@@ -93,8 +119,7 @@ class _MyAppState extends State<MyApp> {
                           switch (v.resultStatus) {
                             case EnumSeverResponseStatus.success:
                               // TODO: If your backend returns a token, you can store it here.
-                              // final String serializedClients =
-                              jsonEncode(ropcClient.toDict());
+                              // final String serializedClients = jsonEncode(ropcClient.toDict());
                               // TODO If you want, save it here in your own way.
                               // TODO Please add a process for when user registration is complete.
                               break;
@@ -242,8 +267,52 @@ class _MyAppState extends State<MyApp> {
                         debugPrint("token: ${jwt ?? "null"}");
                         if (jwt != null) {
                           // TODO Add your implementation to do some operation in the backend.
+
+                          // For web or native device.
+                          // final ServerResponse res = await UtilHttps.post(
+                          //     postingDataURL,
+                          //     {"test": "test params"},
+                          //     EnumPostEncodeType.json,
+                          //     jwt: jwt);
+
+                          // For native device only.
+                          // This version can support self-signed certificates.
+                          final ServerResponse res =
+                              await UtilHttpsForNative.post(
+                                  postingDataURL,
+                                  {"test": "test params"},
+                                  EnumPostEncodeType.json,
+                                  jwt: jwt, badCertificateCallback:
+                                      (X509Certificate cert, String host,
+                                          int port) {
+                            // TODO
+                            // The condition is checked here, and if it returns true,
+                            // self-signed certificates are allowed.
+                            return true;
+                          });
+
+                          // Server response
+                          debugPrint("Server response: $res");
+                          switch (res.resultStatus) {
+                            case EnumSeverResponseStatus.success:
+                              // TODO: Handle this case.
+                              break;
+                            case EnumSeverResponseStatus.timeout:
+                              // TODO: Handle this case.
+                              break;
+                            case EnumSeverResponseStatus.serverError:
+                              // TODO: Handle this case.
+                              break;
+                            case EnumSeverResponseStatus.otherError:
+                              // TODO: Handle this case.
+                              break;
+                            case EnumSeverResponseStatus.signInRequired:
+                              // TODO: Handle this case.
+                              break;
+                          }
                         } else {
                           // TODO The token has expired or was not obtained, so please go to the sign-in screen.
+                          debugPrint("The token is null.");
                         }
                       },
                       child: const Text('Post data to EndPoints'),

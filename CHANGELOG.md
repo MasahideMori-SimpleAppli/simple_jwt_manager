@@ -1,3 +1,7 @@
+## 0.0.12
+
+* I've improved the example to make it easier to understand.
+
 ## 0.0.11
 
 * The UtilServerResponse class is now public.
