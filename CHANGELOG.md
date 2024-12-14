@@ -1,3 +1,7 @@
+## 0.0.13
+
+* Conditional export now automatically changes which classes are available for web or native.
+
 ## 0.0.12
 
 * I've improved the example to make it easier to understand.

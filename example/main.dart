@@ -1,12 +1,11 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 import 'dart:convert';
 
 // TODO select client version.
-// late final ROPCClient ropcClient; // web or native
-late final ROPCClientForNative
-    ropcClient; // native, use self-signed certificates
+late final ROPCClient ropcClient; // web or native
+// late final ROPCClientForNative
+//     ropcClient; // native, use self-signed certificates
 
 // TODO: Please make sure to rewrite this URL.
 const String registerURL = "https://your end point url";
@@ -26,29 +25,29 @@ void main() async {
   // you can manage multiple tokens separately in multiple ROPCClient.
 
   // For web or native device.
-  // ropcClient = ROPCClient(
-  //     registerURL: registerURL,
-  //     signInURL: signInURL,
-  //     refreshURL: refreshURL,
-  //     signOutURL: signOutURL,
-  //     deleteUserURL: deleteUserURL,
-  //     savedData: savedData);
-
-  // For native device only.
-  // This version can support self-signed certificates.
-  ropcClient = ROPCClientForNative(
+  ropcClient = ROPCClient(
       registerURL: registerURL,
       signInURL: signInURL,
       refreshURL: refreshURL,
       signOutURL: signOutURL,
       deleteUserURL: deleteUserURL,
-      badCertificateCallback: (X509Certificate cert, String host, int port) {
-        // TODO
-        // The condition is checked here, and if it returns true,
-        // self-signed certificates are allowed.
-        return true;
-      },
       savedData: savedData);
+
+  // For native device only.
+  // This version can support self-signed certificates.
+  // ropcClient = ROPCClientForNative(
+  //     registerURL: registerURL,
+  //     signInURL: signInURL,
+  //     refreshURL: refreshURL,
+  //     signOutURL: signOutURL,
+  //     deleteUserURL: deleteUserURL,
+  //     badCertificateCallback: (X509Certificate cert, String host, int port) {
+  //       // TODO
+  //       // The condition is checked here, and if it returns true,
+  //       // self-signed certificates are allowed.
+  //       return true;
+  //     },
+  //     savedData: savedData);
 
   runApp(const MyApp());
 }
@@ -269,27 +268,27 @@ class _MyAppState extends State<MyApp> {
                           // TODO Add your implementation to do some operation in the backend.
 
                           // For web or native device.
-                          // final ServerResponse res = await UtilHttps.post(
-                          //     postingDataURL,
-                          //     {"test": "test params"},
-                          //     EnumPostEncodeType.json,
-                          //     jwt: jwt);
+                          final ServerResponse res = await UtilHttps.post(
+                              postingDataURL,
+                              {"test": "test params"},
+                              EnumPostEncodeType.json,
+                              jwt: jwt);
 
                           // For native device only.
                           // This version can support self-signed certificates.
-                          final ServerResponse res =
-                              await UtilHttpsForNative.post(
-                                  postingDataURL,
-                                  {"test": "test params"},
-                                  EnumPostEncodeType.json,
-                                  jwt: jwt, badCertificateCallback:
-                                      (X509Certificate cert, String host,
-                                          int port) {
-                            // TODO
-                            // The condition is checked here, and if it returns true,
-                            // self-signed certificates are allowed.
-                            return true;
-                          });
+                          // final ServerResponse res =
+                          //     await UtilHttpsForNative.post(
+                          //         postingDataURL,
+                          //         {"test": "test params"},
+                          //         EnumPostEncodeType.json,
+                          //         jwt: jwt, badCertificateCallback:
+                          //             (X509Certificate cert, String host,
+                          //                 int port) {
+                          //   // TODO
+                          //   // The condition is checked here, and if it returns true,
+                          //   // self-signed certificates are allowed.
+                          //   return true;
+                          // });
 
                           // Server response
                           debugPrint("Server response: $res");
