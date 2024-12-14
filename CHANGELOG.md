@@ -1,3 +1,7 @@
+## 0.0.14
+
+* Fixed export misconfiguration in v0.0.13.
+
 ## 0.0.13
 
 * Conditional export now automatically changes which classes are available for web or native.
