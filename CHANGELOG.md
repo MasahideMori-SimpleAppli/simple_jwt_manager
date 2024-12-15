@@ -1,3 +1,7 @@
+## 0.0.15
+
+* The way to refer to the Apache License has changed. This change does not affect the contents of the license.
+
 ## 0.0.14
 
 * Fixed export misconfiguration in v0.0.13.
