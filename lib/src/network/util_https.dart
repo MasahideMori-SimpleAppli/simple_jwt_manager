@@ -49,7 +49,7 @@ class UtilHttps {
   ///
   /// * [url] : The URL to post to. Only https is permitted;
   /// anything else will return an error response.
-  /// * [body] : Map<String, dynamic>, Json encoded string, or List<int>.
+  /// * [body] : Map&lt;String, dynamic&gt;, Json encoded string, or List&lt;int&gt;.
   /// * [headers] : HTTP headers.
   /// * [encoding] : The data encoding.
   /// * [timeout] : The response timeout.
