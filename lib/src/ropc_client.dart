@@ -19,7 +19,7 @@ import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart'
 class ROPCClient {
   // static parameters
   static const String className = "ROPCClient";
-  static const int version = 3;
+  static const int version = 4;
 
   // parameters
   late final String _registerUrl;
@@ -28,6 +28,7 @@ class ROPCClient {
   late final String _revokeURL;
   late final String _deleteUserURL;
   late final Duration _timeout;
+  late final int refreshMarginMs;
 
   // tokens
   String? _accessToken;
@@ -52,6 +53,10 @@ class ROPCClient {
   /// * [timeout] : Timeout period for server access. Default is 1 min.
   /// * [savedData] : If there is token information previously saved by
   /// this class's toDict function, you can restore the token by setting it.
+  /// * [refreshMarginMs] : The access token expiration time will be estimated
+  /// early by the margin you set here.
+  /// By default, if the access token is due to expire within 30 seconds,
+  /// it will be automatically refreshed using a refresh token.
   ROPCClient(
       {required String registerURL,
       required String signInURL,
@@ -59,7 +64,8 @@ class ROPCClient {
       required String signOutURL,
       required String deleteUserURL,
       Duration? timeout,
-      Map<String, dynamic>? savedData}) {
+      Map<String, dynamic>? savedData,
+      this.refreshMarginMs = 30 * 1000}) {
     _registerUrl = UtilCheckURL.validateHttpsUrl(registerURL);
     _signInUrl = UtilCheckURL.validateHttpsUrl(signInURL);
     _refreshUrl = UtilCheckURL.validateHttpsUrl(refreshURL);
@@ -185,7 +191,8 @@ class ROPCClient {
           FJsonKeysToServer.option: option
         },
         EnumPostEncodeType.json,
-        timeout: _timeout);
+        timeout: _timeout,
+        adjustTiming: false);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         try {
@@ -229,7 +236,8 @@ class ROPCClient {
           FJsonKeysToServer.option: option
         },
         EnumPostEncodeType.json,
-        timeout: _timeout);
+        timeout: _timeout,
+        adjustTiming: false);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         _clearToken();
@@ -287,7 +295,8 @@ class ROPCClient {
           FJsonKeysToServer.scope: scope,
         },
         EnumPostEncodeType.urlEncoded,
-        timeout: _timeout);
+        timeout: _timeout,
+        adjustTiming: false);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         // トークンを取得して保存
@@ -313,11 +322,14 @@ class ROPCClient {
   /// If an error occurs along the way,
   /// an error will simply be returned,
   /// which may make it difficult to understand the situation.
+  /// To find out which token failed to be revoked when an error occurred,
+  /// check the tokens held by the client.
   ///
   /// (ja) RFC 7009の仕様の通り、サインアウト処理を行います。
   /// これは簡易版で、リフレッシュトークンとアクセストークンを連続で失効処理します。
   /// 途中で何らかのエラーが発生した場合は、単にエラーが返されます。
-  /// 処理が失敗した場合、どちらの失効リクエストが失敗したのかを判断するには、
+  /// エラー時にどのトークンの失効に失敗したのかを調べるには、
+  /// クライアントの保持するトークンを確認してください。
   Future<ServerResponse> signOutAllTokens() async {
     ServerResponse res = await signOut(isRefreshToken: true);
     switch (res.resultStatus) {
@@ -368,7 +380,7 @@ class ROPCClient {
     }
     final r = await UtilHttps.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
-        timeout: _timeout);
+        timeout: _timeout, adjustTiming: false);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         if (isRefreshToken) {
@@ -417,7 +429,8 @@ class ROPCClient {
   /// トークンの期限切れをチェックします。
   bool _isTokenExpired() {
     if (_accessTokenExpireUnixMS == null) return true;
-    return DateTime.now().millisecondsSinceEpoch > _accessTokenExpireUnixMS!;
+    return DateTime.now().millisecondsSinceEpoch >
+        _accessTokenExpireUnixMS! - refreshMarginMs;
   }
 
   /// (en) This method should not be called directly except when debugging.
@@ -438,7 +451,8 @@ class ROPCClient {
           FJsonKeysToServer.refreshToken: _refreshToken,
         },
         EnumPostEncodeType.urlEncoded,
-        timeout: _timeout);
+        timeout: _timeout,
+        adjustTiming: false);
     switch (r.resultStatus) {
       case EnumSeverResponseStatus.success:
         try {

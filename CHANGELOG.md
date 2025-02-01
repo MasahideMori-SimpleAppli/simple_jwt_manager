@@ -1,3 +1,10 @@
+## 0.0.17
+
+* UtilHttps and UtilHttpsForNative now allow you to adjust the timing when POSTing to the backend. Optional arguments adjustTiming and intervalMSec have been added.
+* Added TimingManager class.
+* Added an optional refreshMarginMs argument to ROPCClient and ROPCClientForNative, which causes the actual expiration time minus refreshMarginMs to be used in the calculation, reducing errors caused by throwing tokens that are too close to the expiration time.
+* Updated doc text.
+
 ## 0.0.16
 
 * Updated doc text.

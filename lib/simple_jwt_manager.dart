@@ -1,3 +1,4 @@
+export 'src/manager/timing_manager.dart';
 export 'src/network/enum_post_type.dart';
 export 'src/network/util_check_url.dart';
 export 'src/network/util_https_stub.dart'

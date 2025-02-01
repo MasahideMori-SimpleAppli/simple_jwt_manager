@@ -25,16 +25,20 @@ class UtilHttpsForNative {
   /// that uses a self-signed certificate.
   /// * [connectionTimeout] : The connection timeout.
   /// * [responseTimeout] : The response timeout.
+  /// * [adjustTiming] : Specify true to automatically adjust the timing.
+  /// * [intervalMSec] : The minimum interval between calls that is
+  /// automatically adjusted if adjustTiming is True.
+  /// If consecutive calls are made earlier than this,
+  /// they will wait until this interval before being executed.
   static Future<ServerResponse> post(
-    String url,
-    Map<String, dynamic> body,
-    EnumPostEncodeType type, {
-    String? jwt,
-    bool Function(X509Certificate cert, String host, int port)?
-        badCertificateCallback,
-    Duration connectionTimeout = const Duration(seconds: 10),
-    Duration responseTimeout = const Duration(seconds: 10),
-  }) async {
+      String url, Map<String, dynamic> body, EnumPostEncodeType type,
+      {String? jwt,
+      bool Function(X509Certificate cert, String host, int port)?
+          badCertificateCallback,
+      Duration connectionTimeout = const Duration(seconds: 10),
+      Duration responseTimeout = const Duration(seconds: 10),
+      bool adjustTiming = true,
+      intervalMSec = 1200}) async {
     Map<String, String> headers = {};
     if (jwt != null) {
       headers['Authorization'] = 'Bearer $jwt';
@@ -45,13 +49,17 @@ class UtilHttpsForNative {
         return customPost(url, Uri(queryParameters: body).query, headers,
             badCertificateCallback: badCertificateCallback,
             connectionTimeout: connectionTimeout,
-            responseTimeout: responseTimeout);
+            responseTimeout: responseTimeout,
+            adjustTiming: adjustTiming,
+            intervalMSec: intervalMSec);
       case EnumPostEncodeType.json:
         headers['Content-Type'] = 'application/json';
         return customPost(url, jsonEncode(body), headers,
             badCertificateCallback: badCertificateCallback,
             connectionTimeout: connectionTimeout,
-            responseTimeout: responseTimeout);
+            responseTimeout: responseTimeout,
+            adjustTiming: adjustTiming,
+            intervalMSec: intervalMSec);
     }
   }
 
@@ -71,16 +79,23 @@ class UtilHttpsForNative {
   /// that uses a self-signed certificate.
   /// * [connectionTimeout] : The connection timeout.
   /// * [responseTimeout] : The response timeout.
+  /// * [adjustTiming] : Specify true to automatically adjust the timing.
+  /// * [intervalMSec] : The minimum interval between calls that is
+  /// automatically adjusted if adjustTiming is True.
+  /// If consecutive calls are made earlier than this,
+  /// they will wait until this interval before being executed.
   static Future<ServerResponse> customPost(
-    String url,
-    Object? body,
-    Map<String, String> headers, {
-    Encoding? encoding,
-    bool Function(X509Certificate cert, String host, int port)?
-        badCertificateCallback,
-    Duration connectionTimeout = const Duration(seconds: 10),
-    Duration responseTimeout = const Duration(seconds: 10),
-  }) async {
+      String url, Object? body, Map<String, String> headers,
+      {Encoding? encoding,
+      bool Function(X509Certificate cert, String host, int port)?
+          badCertificateCallback,
+      Duration connectionTimeout = const Duration(seconds: 10),
+      Duration responseTimeout = const Duration(seconds: 10),
+      bool adjustTiming = true,
+      intervalMSec = 1200}) async {
+    if (adjustTiming) {
+      await TimingManager().adjustTiming(intervalMs: intervalMSec);
+    }
     final HttpClient client = HttpClient();
     if (badCertificateCallback != null) {
       client.badCertificateCallback =
