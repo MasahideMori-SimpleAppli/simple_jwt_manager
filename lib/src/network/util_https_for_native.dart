@@ -26,10 +26,11 @@ class UtilHttpsForNative {
   /// * [connectionTimeout] : The connection timeout.
   /// * [responseTimeout] : The response timeout.
   /// * [adjustTiming] : Specify true to automatically adjust the timing.
-  /// * [intervalMSec] : The minimum interval between calls that is
+  /// * [intervalMs] : The minimum interval between calls that is
   /// automatically adjusted if adjustTiming is True.
   /// If consecutive calls are made earlier than this,
   /// they will wait until this interval before being executed.
+  /// The unit is milliseconds.
   static Future<ServerResponse> post(
       String url, Map<String, dynamic> body, EnumPostEncodeType type,
       {String? jwt,
@@ -38,7 +39,7 @@ class UtilHttpsForNative {
       Duration connectionTimeout = const Duration(seconds: 10),
       Duration responseTimeout = const Duration(seconds: 10),
       bool adjustTiming = true,
-      intervalMSec = 1200}) async {
+      intervalMs = 1200}) async {
     Map<String, String> headers = {};
     if (jwt != null) {
       headers['Authorization'] = 'Bearer $jwt';
@@ -51,7 +52,7 @@ class UtilHttpsForNative {
             connectionTimeout: connectionTimeout,
             responseTimeout: responseTimeout,
             adjustTiming: adjustTiming,
-            intervalMSec: intervalMSec);
+            intervalMs: intervalMs);
       case EnumPostEncodeType.json:
         headers['Content-Type'] = 'application/json';
         return customPost(url, jsonEncode(body), headers,
@@ -59,7 +60,7 @@ class UtilHttpsForNative {
             connectionTimeout: connectionTimeout,
             responseTimeout: responseTimeout,
             adjustTiming: adjustTiming,
-            intervalMSec: intervalMSec);
+            intervalMs: intervalMs);
     }
   }
 
@@ -80,10 +81,11 @@ class UtilHttpsForNative {
   /// * [connectionTimeout] : The connection timeout.
   /// * [responseTimeout] : The response timeout.
   /// * [adjustTiming] : Specify true to automatically adjust the timing.
-  /// * [intervalMSec] : The minimum interval between calls that is
+  /// * [intervalMs] : The minimum interval between calls that is
   /// automatically adjusted if adjustTiming is True.
   /// If consecutive calls are made earlier than this,
   /// they will wait until this interval before being executed.
+  /// The unit is milliseconds.
   static Future<ServerResponse> customPost(
       String url, Object? body, Map<String, String> headers,
       {Encoding? encoding,
@@ -92,9 +94,9 @@ class UtilHttpsForNative {
       Duration connectionTimeout = const Duration(seconds: 10),
       Duration responseTimeout = const Duration(seconds: 10),
       bool adjustTiming = true,
-      intervalMSec = 1200}) async {
+      intervalMs = 1200}) async {
     if (adjustTiming) {
-      await TimingManager().adjustTiming(intervalMs: intervalMSec);
+      await TimingManager().adjustTiming(intervalMs: intervalMs);
     }
     final HttpClient client = HttpClient();
     if (badCertificateCallback != null) {

@@ -19,16 +19,17 @@ class UtilHttps {
   /// * [jwt] : The jwt. It is inserted into the Authorization header.
   /// * [timeout] : The response timeout.
   /// * [adjustTiming] : Specify true to automatically adjust the timing.
-  /// * [intervalMSec] : The minimum interval between calls that is
+  /// * [intervalMs] : The minimum interval between calls that is
   /// automatically adjusted if adjustTiming is True.
   /// If consecutive calls are made earlier than this,
   /// they will wait until this interval before being executed.
+  /// The unit is milliseconds.
   static Future<ServerResponse> post(
       String url, Map<String, dynamic> body, EnumPostEncodeType type,
       {String? jwt,
       Duration timeout = const Duration(seconds: 10),
       bool adjustTiming = true,
-      intervalMSec = 1200}) async {
+      intervalMs = 1200}) async {
     Map<String, String> headers = {};
     if (jwt != null) {
       headers['Authorization'] = 'Bearer $jwt';
@@ -39,13 +40,13 @@ class UtilHttps {
         return customPost(url, Uri(queryParameters: body).query, headers,
             timeout: timeout,
             adjustTiming: adjustTiming,
-            intervalMSec: intervalMSec);
+            intervalMs: intervalMs);
       case EnumPostEncodeType.json:
         headers['Content-Type'] = 'application/json';
         return customPost(url, jsonEncode(body), headers,
             timeout: timeout,
             adjustTiming: adjustTiming,
-            intervalMSec: intervalMSec);
+            intervalMs: intervalMs);
     }
   }
 
@@ -63,19 +64,20 @@ class UtilHttps {
   /// * [encoding] : The data encoding.
   /// * [timeout] : The response timeout.
   /// * [adjustTiming] : Specify true to automatically adjust the timing.
-  /// * [intervalMSec] : The minimum interval between calls that is
+  /// * [intervalMs] : The minimum interval between calls that is
   /// automatically adjusted if adjustTiming is True.
   /// If consecutive calls are made earlier than this,
   /// they will wait until this interval before being executed.
+  /// The unit is milliseconds.
   static Future<ServerResponse> customPost(
       String url, Object? body, Map<String, String> headers,
       {Encoding? encoding,
       Duration timeout = const Duration(seconds: 10),
       bool adjustTiming = true,
-      intervalMSec = 1200}) async {
+      intervalMs = 1200}) async {
     try {
       if (adjustTiming) {
-        await TimingManager().adjustTiming(intervalMs: intervalMSec);
+        await TimingManager().adjustTiming(intervalMs: intervalMs);
       }
       final String httpsURL = UtilCheckURL.validateHttpsUrl(url);
       final http.Response r = await http
