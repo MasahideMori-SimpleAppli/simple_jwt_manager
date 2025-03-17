@@ -1,3 +1,8 @@
+## 0.0.18
+
+* Updated minimum SDK version.
+* Platform-specific conditional export has been updated to the latest method.
+
 ## 0.0.17
 
 * UtilHttps and UtilHttpsForNative now allow you to adjust the timing when POSTing to the backend. Optional arguments adjustTiming and intervalMSec have been added.

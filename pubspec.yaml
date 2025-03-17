@@ -1,16 +1,17 @@
 name: simple_jwt_manager
 description: "This is a package that supports authentication using the ROPC defined in RFC 6749."
-version: 0.0.17
+version: 0.0.18
 repository: https://github.com/MasahideMori-SimpleAppli/simple_jwt_manager
 
 environment:
   sdk: ">=2.17.0 <4.0.0"
-  flutter: ">=2.0.0"
+  flutter: ">=3.27.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.2.2
+  web: ^1.1.1
+  http: ^1.3.0
 
 dev_dependencies:
   flutter_test:
