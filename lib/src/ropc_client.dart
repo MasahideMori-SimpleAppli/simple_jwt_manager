@@ -194,7 +194,7 @@ class ROPCClient {
         timeout: _timeout,
         adjustTiming: false);
     switch (r.resultStatus) {
-      case EnumSeverResponseStatus.success:
+      case EnumServerResponseStatus.success:
         try {
           // サーバーがトークンを返す仕様の場合は取得してログイン状態にする
           final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
@@ -204,10 +204,10 @@ class ROPCClient {
           // サーバーがトークンを返さない、または戻り値がJSONでは無いような場合。
           return r;
         }
-      case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverError:
-      case EnumSeverResponseStatus.otherError:
-      case EnumSeverResponseStatus.signInRequired:
+      case EnumServerResponseStatus.timeout:
+      case EnumServerResponseStatus.serverError:
+      case EnumServerResponseStatus.otherError:
+      case EnumServerResponseStatus.signInRequired:
         return r;
     }
   }
@@ -239,13 +239,13 @@ class ROPCClient {
         timeout: _timeout,
         adjustTiming: false);
     switch (r.resultStatus) {
-      case EnumSeverResponseStatus.success:
+      case EnumServerResponseStatus.success:
         _clearToken();
         return r;
-      case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverError:
-      case EnumSeverResponseStatus.otherError:
-      case EnumSeverResponseStatus.signInRequired:
+      case EnumServerResponseStatus.timeout:
+      case EnumServerResponseStatus.serverError:
+      case EnumServerResponseStatus.otherError:
+      case EnumServerResponseStatus.signInRequired:
         return r;
     }
   }
@@ -298,7 +298,7 @@ class ROPCClient {
         timeout: _timeout,
         adjustTiming: false);
     switch (r.resultStatus) {
-      case EnumSeverResponseStatus.success:
+      case EnumServerResponseStatus.success:
         // トークンを取得して保存
         final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
         _updateJWTBuff(tokens);
@@ -308,10 +308,10 @@ class ROPCClient {
               "OAuth 2.0 response error: missing token or token_type");
         }
         return r;
-      case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverError:
-      case EnumSeverResponseStatus.otherError:
-      case EnumSeverResponseStatus.signInRequired:
+      case EnumServerResponseStatus.timeout:
+      case EnumServerResponseStatus.serverError:
+      case EnumServerResponseStatus.otherError:
+      case EnumServerResponseStatus.signInRequired:
         return r;
     }
   }
@@ -333,12 +333,12 @@ class ROPCClient {
   Future<ServerResponse> signOutAllTokens() async {
     ServerResponse res = await signOut(isRefreshToken: true);
     switch (res.resultStatus) {
-      case EnumSeverResponseStatus.success:
+      case EnumServerResponseStatus.success:
         return await signOut(isRefreshToken: false);
-      case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverError:
-      case EnumSeverResponseStatus.otherError:
-      case EnumSeverResponseStatus.signInRequired:
+      case EnumServerResponseStatus.timeout:
+      case EnumServerResponseStatus.serverError:
+      case EnumServerResponseStatus.otherError:
+      case EnumServerResponseStatus.signInRequired:
         return res;
     }
   }
@@ -382,7 +382,7 @@ class ROPCClient {
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
         timeout: _timeout, adjustTiming: false);
     switch (r.resultStatus) {
-      case EnumSeverResponseStatus.success:
+      case EnumServerResponseStatus.success:
         if (isRefreshToken) {
           _refreshToken = null;
         } else {
@@ -392,10 +392,10 @@ class ROPCClient {
           _tokenType = null;
         }
         return r;
-      case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.serverError:
-      case EnumSeverResponseStatus.otherError:
-      case EnumSeverResponseStatus.signInRequired:
+      case EnumServerResponseStatus.timeout:
+      case EnumServerResponseStatus.serverError:
+      case EnumServerResponseStatus.otherError:
+      case EnumServerResponseStatus.signInRequired:
         return r;
     }
   }
@@ -418,7 +418,7 @@ class ROPCClient {
     }
     if (_isTokenExpired()) {
       final ServerResponse res = await refreshAndGetNewToken();
-      if (res.resultStatus != EnumSeverResponseStatus.success) {
+      if (res.resultStatus != EnumServerResponseStatus.success) {
         debugPrint(res.errorDetail);
         return null;
       }
@@ -454,7 +454,7 @@ class ROPCClient {
         timeout: _timeout,
         adjustTiming: false);
     switch (r.resultStatus) {
-      case EnumSeverResponseStatus.success:
+      case EnumServerResponseStatus.success:
         try {
           // トークンを取得して保存
           final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
@@ -468,7 +468,7 @@ class ROPCClient {
         } catch (e) {
           return UtilServerResponse.otherError('Invalid token format');
         }
-      case EnumSeverResponseStatus.serverError:
+      case EnumServerResponseStatus.serverError:
         if (r.response != null) {
           // リフレッシュトークンが期限切れの場合、クライアント側のトークンをクリアする
           if (r.response!.statusCode == 401) {
@@ -477,9 +477,9 @@ class ROPCClient {
           }
         }
         return r;
-      case EnumSeverResponseStatus.timeout:
-      case EnumSeverResponseStatus.otherError:
-      case EnumSeverResponseStatus.signInRequired:
+      case EnumServerResponseStatus.timeout:
+      case EnumServerResponseStatus.otherError:
+      case EnumServerResponseStatus.signInRequired:
         return r;
     }
   }

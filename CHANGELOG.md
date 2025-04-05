@@ -1,3 +1,9 @@
+## 0.0.19
+
+* Enhanced UtilHttps to add byte and text server response types.
+* Fixed a spelling mistake in the EnumServerResponseStatus class.
+* Improved the example.
+
 ## 0.0.18
 
 * Updated minimum SDK version.

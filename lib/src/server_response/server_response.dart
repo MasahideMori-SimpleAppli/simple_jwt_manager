@@ -13,7 +13,7 @@ import 'enum_server_response_status.dart';
 /// First edition creation date 2024-10-29 17:36:24
 class ServerResponse {
   final http.Response? response;
-  final EnumSeverResponseStatus resultStatus;
+  final EnumServerResponseStatus resultStatus;
   final Map<String, dynamic>? resBody;
   final String? errorDetail;
 

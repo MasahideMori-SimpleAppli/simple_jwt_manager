@@ -23,6 +23,7 @@ void main() async {
   // In practical use, it may be useful to wrap ROPCClient in a singleton class.
   // Because ROPCClient class is not a singleton,
   // you can manage multiple tokens separately in multiple ROPCClient.
+  // You can easily create savedData by calling ropcClient.toDict().
 
   // For web or native device.
   ropcClient = ROPCClient(
@@ -116,22 +117,22 @@ class _MyAppState extends State<MyApp> {
                             .then((ServerResponse v) {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
-                            case EnumSeverResponseStatus.success:
+                            case EnumServerResponseStatus.success:
                               // TODO: If your backend returns a token, you can store it here.
-                              // final String serializedClients = jsonEncode(ropcClient.toDict());
+                              // final String savedData = jsonEncode(ropcClient.toDict());
                               // TODO If you want, save it here in your own way.
                               // TODO Please add a process for when user registration is complete.
                               break;
-                            case EnumSeverResponseStatus.timeout:
+                            case EnumServerResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumServerResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
-                            case EnumSeverResponseStatus.otherError:
+                            case EnumServerResponseStatus.otherError:
                               // TODO: Handle other error case.
                               break;
-                            case EnumSeverResponseStatus.signInRequired:
+                            case EnumServerResponseStatus.signInRequired:
                               // That doesn't usually happen here.
                               throw Exception();
                           }
@@ -148,23 +149,22 @@ class _MyAppState extends State<MyApp> {
                             .then((ServerResponse v) {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
-                            case EnumSeverResponseStatus.success:
+                            case EnumServerResponseStatus.success:
                               // TODO: If your backend returns a token, you can store it here.
-                              // final String serializedClients =
-                              jsonEncode(ropcClient.toDict());
+                              // final String savedData = jsonEncode(ropcClient.toDict());
                               // TODO If you want, save it here in your own way.
                               // TODO Please add a process for when user registration is complete.
                               break;
-                            case EnumSeverResponseStatus.timeout:
+                            case EnumServerResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumServerResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
-                            case EnumSeverResponseStatus.otherError:
+                            case EnumServerResponseStatus.otherError:
                               // TODO: Handle other error case.
                               break;
-                            case EnumSeverResponseStatus.signInRequired:
+                            case EnumServerResponseStatus.signInRequired:
                               // That doesn't usually happen here.
                               throw Exception();
                           }
@@ -179,19 +179,19 @@ class _MyAppState extends State<MyApp> {
                         ropcClient.signOutAllTokens().then((ServerResponse v) {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
-                            case EnumSeverResponseStatus.success:
+                            case EnumServerResponseStatus.success:
                               // signOut completed.
                               break;
-                            case EnumSeverResponseStatus.timeout:
+                            case EnumServerResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumServerResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
-                            case EnumSeverResponseStatus.otherError:
+                            case EnumServerResponseStatus.otherError:
                               // TODO: Handle other error case.
                               break;
-                            case EnumSeverResponseStatus.signInRequired:
+                            case EnumServerResponseStatus.signInRequired:
                               // That doesn't usually happen here.
                               throw Exception();
                           }
@@ -208,19 +208,19 @@ class _MyAppState extends State<MyApp> {
                             .then((ServerResponse v) {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
-                            case EnumSeverResponseStatus.success:
+                            case EnumServerResponseStatus.success:
                               // delete user completed.
                               break;
-                            case EnumSeverResponseStatus.timeout:
+                            case EnumServerResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumServerResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
-                            case EnumSeverResponseStatus.otherError:
+                            case EnumServerResponseStatus.otherError:
                               // TODO: Handle other error case.
                               break;
-                            case EnumSeverResponseStatus.signInRequired:
+                            case EnumServerResponseStatus.signInRequired:
                               // That doesn't usually happen here.
                               throw Exception();
                           }
@@ -237,19 +237,19 @@ class _MyAppState extends State<MyApp> {
                             .then((ServerResponse v) {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
-                            case EnumSeverResponseStatus.success:
+                            case EnumServerResponseStatus.success:
                               // completed.
                               break;
-                            case EnumSeverResponseStatus.timeout:
+                            case EnumServerResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumServerResponseStatus.serverError:
                               // TODO: Handle server side error case.
                               break;
-                            case EnumSeverResponseStatus.otherError:
+                            case EnumServerResponseStatus.otherError:
                               // TODO: Handle other error case.
                               break;
-                            case EnumSeverResponseStatus.signInRequired:
+                            case EnumServerResponseStatus.signInRequired:
                               // TODO:
                               debugPrint("SignIn required");
                               break;
@@ -293,19 +293,19 @@ class _MyAppState extends State<MyApp> {
                           // Server response
                           debugPrint("Server response: $res");
                           switch (res.resultStatus) {
-                            case EnumSeverResponseStatus.success:
+                            case EnumServerResponseStatus.success:
                               // TODO: Handle this case.
                               break;
-                            case EnumSeverResponseStatus.timeout:
+                            case EnumServerResponseStatus.timeout:
                               // TODO: Handle this case.
                               break;
-                            case EnumSeverResponseStatus.serverError:
+                            case EnumServerResponseStatus.serverError:
                               // TODO: Handle this case.
                               break;
-                            case EnumSeverResponseStatus.otherError:
+                            case EnumServerResponseStatus.otherError:
                               // TODO: Handle this case.
                               break;
-                            case EnumSeverResponseStatus.signInRequired:
+                            case EnumServerResponseStatus.signInRequired:
                               // TODO: Handle this case.
                               break;
                           }

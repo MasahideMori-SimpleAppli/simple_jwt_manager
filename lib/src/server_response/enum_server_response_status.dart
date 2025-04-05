@@ -11,7 +11,7 @@
 /// Author Masahide Mori
 ///
 /// First edition creation date 2024-10-29 17:34:13
-enum EnumSeverResponseStatus {
+enum EnumServerResponseStatus {
   success,
   timeout,
   serverError,
