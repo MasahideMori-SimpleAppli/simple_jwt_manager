@@ -1,3 +1,5 @@
+// import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 // import 'dart:convert';
@@ -32,7 +34,12 @@ void main() async {
       refreshURL: refreshURL,
       signOutURL: signOutURL,
       deleteUserURL: deleteUserURL,
-      savedData: savedData);
+      savedData: savedData,
+      updateJwtCallback: (Map<String, dynamic> savedData) {
+        // TODO
+        // You can save the JWT on your device.
+        // This is also called if the token is deleted.
+      });
 
   // For native device only.
   // This version can support self-signed certificates.
@@ -48,7 +55,12 @@ void main() async {
   //       // self-signed certificates are allowed.
   //       return true;
   //     },
-  //     savedData: savedData);
+  //     savedData: savedData,
+  //     updateJwtCallback: (Map<String, dynamic> savedData) {
+  //       // TODO
+  //       // You can save the JWT on your device.
+  //       // This is also called if the token is deleted.
+  //     });
 
   runApp(const MyApp());
 }
@@ -118,9 +130,6 @@ class _MyAppState extends State<MyApp> {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
-                              // TODO: If your backend returns a token, you can store it here.
-                              // final String savedData = jsonEncode(ropcClient.toDict());
-                              // TODO If you want, save it here in your own way.
                               // TODO Please add a process for when user registration is complete.
                               break;
                             case EnumServerResponseStatus.timeout:
@@ -150,9 +159,6 @@ class _MyAppState extends State<MyApp> {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
-                              // TODO: If your backend returns a token, you can store it here.
-                              // final String savedData = jsonEncode(ropcClient.toDict());
-                              // TODO If you want, save it here in your own way.
                               // TODO Please add a process for when user registration is complete.
                               break;
                             case EnumServerResponseStatus.timeout:

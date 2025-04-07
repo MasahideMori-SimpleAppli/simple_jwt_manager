@@ -19,7 +19,7 @@ import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart'
 class ROPCClient {
   // static parameters
   static const String className = "ROPCClient";
-  static const int version = 4;
+  static const int version = 5;
 
   // parameters
   late final String _registerUrl;
@@ -29,6 +29,7 @@ class ROPCClient {
   late final String _deleteUserURL;
   late final Duration _timeout;
   late final int refreshMarginMs;
+  final void Function(Map<String, dynamic> savedData)? updateJwtCallback;
 
   // tokens
   String? _accessToken;
@@ -57,6 +58,12 @@ class ROPCClient {
   /// early by the margin you set here.
   /// By default, if the access token is due to expire within 30 seconds,
   /// it will be automatically refreshed using a refresh token.
+  /// * [updateJwtCallback] : This is a callback that is called whenever
+  /// a managed JWT is updated. It is called after a JWT is retrieved, replaced,
+  /// or deleted.
+  /// The result of the toDict call on this class is passed as an argument to
+  /// the function, and can be saved to compose the savedData used on app restart
+  /// that will be passed on app restart.
   ROPCClient(
       {required String registerURL,
       required String signInURL,
@@ -65,7 +72,8 @@ class ROPCClient {
       required String deleteUserURL,
       Duration? timeout,
       Map<String, dynamic>? savedData,
-      this.refreshMarginMs = 30 * 1000}) {
+      this.refreshMarginMs = 30 * 1000,
+      this.updateJwtCallback}) {
     _registerUrl = UtilCheckURL.validateHttpsUrl(registerURL);
     _signInUrl = UtilCheckURL.validateHttpsUrl(signInURL);
     _refreshUrl = UtilCheckURL.validateHttpsUrl(refreshURL);
@@ -169,6 +177,8 @@ class ROPCClient {
   /// 戻り値にトークンが含まれない場合はアクセス成功フラグが返され、トークンは更新されません。
   ///
   /// * [email] : User mail address. It is used as an ID(User name).
+  /// According to the OAuth2.0 specification,
+  /// this will be sent as the username.
   /// * [password] : pw.
   /// * [scope] : Application specific access permissions passed
   /// in space separated format, e.g. read write, user:follow, etc.
@@ -224,6 +234,8 @@ class ROPCClient {
   /// 本ペッケージの実装ではdeleteUserURLに対してJSONで情報がPOSTされます。
   ///
   /// * [email] : User mail address. It is used as an ID(User name).
+  /// According to the OAuth2.0 specification,
+  /// this will be sent as the username.
   /// * [password] : pw.
   /// * [option] : Other optional parameters.
   Future<ServerResponse> deleteUser(String email, String password,
@@ -272,6 +284,10 @@ class ROPCClient {
     if (tokens.containsKey(FJsonKeysFromServer.refreshToken)) {
       _refreshToken = tokens[FJsonKeysFromServer.refreshToken];
     }
+    // コールバックがあれば起動する
+    if (updateJwtCallback != null) {
+      updateJwtCallback!(toDict());
+    }
   }
 
   /// (en) Obtain a token using
@@ -281,6 +297,8 @@ class ROPCClient {
   /// トークンを取得します。
   ///
   /// * [email] : User mail address. It is used as an ID(User name).
+  /// According to the OAuth2.0 specification,
+  /// this will be sent as the username.
   /// * [password] : pw.
   /// * [scope] : Application specific access permissions passed
   /// in space separated format, e.g. read write, user:follow, etc.
@@ -391,6 +409,10 @@ class ROPCClient {
           _scope = null;
           _tokenType = null;
         }
+        // コールバックがあれば起動する。
+        if (updateJwtCallback != null) {
+          updateJwtCallback!(toDict());
+        }
         return r;
       case EnumServerResponseStatus.timeout:
       case EnumServerResponseStatus.serverError:
@@ -491,5 +513,9 @@ class ROPCClient {
     _scope = null;
     _tokenType = null;
     _refreshToken = null;
+    // コールバックがあれば起動する。
+    if (updateJwtCallback != null) {
+      updateJwtCallback!(toDict());
+    }
   }
 }

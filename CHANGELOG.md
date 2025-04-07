@@ -1,3 +1,8 @@
+## 0.0.20
+
+* Added an optional argument called updateJwtCallback to ROPCClient and ROPCClientForNative.
+  By setting updateJwtCallback, you can automate the process of saving JWTs to the local device when obtaining, updating, or deleting tokens.
+
 ## 0.0.19
 
 * Enhanced UtilHttps to add byte and text server response types.
