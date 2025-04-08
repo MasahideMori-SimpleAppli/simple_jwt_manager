@@ -19,7 +19,7 @@ import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart'
 class ROPCClient {
   // static parameters
   static const String className = "ROPCClient";
-  static const int version = 5;
+  static const int version = 6;
 
   // parameters
   late final String _registerUrl;
@@ -30,6 +30,7 @@ class ROPCClient {
   late final Duration _timeout;
   late final int refreshMarginMs;
   final void Function(Map<String, dynamic> savedData)? updateJwtCallback;
+  final String? charset;
 
   // tokens
   String? _accessToken;
@@ -52,6 +53,8 @@ class ROPCClient {
   /// * [signOutURL] : The URL for signOut (revoke) the token.
   /// * [deleteUserURL] : This is the URL for deleting a user.
   /// * [timeout] : Timeout period for server access. Default is 1 min.
+  /// * [charset] : Use this when you want to explicitly specify the charset in
+  /// the HTTP header.
   /// * [savedData] : If there is token information previously saved by
   /// this class's toDict function, you can restore the token by setting it.
   /// * [refreshMarginMs] : The access token expiration time will be estimated
@@ -71,6 +74,7 @@ class ROPCClient {
       required String signOutURL,
       required String deleteUserURL,
       Duration? timeout,
+      this.charset,
       Map<String, dynamic>? savedData,
       this.refreshMarginMs = 30 * 1000,
       this.updateJwtCallback}) {
@@ -202,7 +206,8 @@ class ROPCClient {
         },
         EnumPostEncodeType.json,
         timeout: _timeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         try {
@@ -249,7 +254,8 @@ class ROPCClient {
         },
         EnumPostEncodeType.json,
         timeout: _timeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         _clearToken();
@@ -314,7 +320,8 @@ class ROPCClient {
         },
         EnumPostEncodeType.urlEncoded,
         timeout: _timeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         // トークンを取得して保存
@@ -398,7 +405,7 @@ class ROPCClient {
     }
     final r = await UtilHttps.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
-        timeout: _timeout, adjustTiming: false);
+        timeout: _timeout, adjustTiming: false, charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         if (isRefreshToken) {
@@ -474,7 +481,8 @@ class ROPCClient {
         },
         EnumPostEncodeType.urlEncoded,
         timeout: _timeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         try {

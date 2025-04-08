@@ -31,36 +31,59 @@ class UtilHttpsForNative {
   /// If consecutive calls are made earlier than this,
   /// they will wait until this interval before being executed.
   /// The unit is milliseconds.
+  /// * [resType] : Formatting the return value from the server.
+  ///
+  /// The return value will be formatted as follows:
+  ///
+  /// For json: ServerResponse.resBody will contain the JSON encoded return value.
+  ///
+  /// For byte: ServerResponse.resBody will contain the return value in the format { "r" : Uint8list }.
+  ///
+  /// For text: ServerResponse.resBody will contain the return value in the format { "r" : UTF-8 text }.
+  /// * [charset] : Use this when you want to explicitly specify the charset in the HTTP header.
   static Future<ServerResponse> post(
       String url, Map<String, dynamic> body, EnumPostEncodeType type,
       {String? jwt,
       bool Function(X509Certificate cert, String host, int port)?
           badCertificateCallback,
       Duration connectionTimeout = const Duration(seconds: 10),
-      Duration responseTimeout = const Duration(seconds: 10),
+      Duration responseTimeout = const Duration(seconds: 60),
       bool adjustTiming = true,
-      intervalMs = 1200}) async {
+      intervalMs = 1200,
+      EnumServerResponseType resType = EnumServerResponseType.json,
+      String? charset}) async {
     Map<String, String> headers = {};
     if (jwt != null) {
       headers['Authorization'] = 'Bearer $jwt';
     }
     switch (type) {
       case EnumPostEncodeType.urlEncoded:
-        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        if (charset == null) {
+          headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        } else {
+          headers['Content-Type'] =
+              'application/x-www-form-urlencoded; charset=$charset';
+        }
         return customPost(url, Uri(queryParameters: body).query, headers,
             badCertificateCallback: badCertificateCallback,
             connectionTimeout: connectionTimeout,
             responseTimeout: responseTimeout,
             adjustTiming: adjustTiming,
-            intervalMs: intervalMs);
+            intervalMs: intervalMs,
+            resType: resType);
       case EnumPostEncodeType.json:
-        headers['Content-Type'] = 'application/json';
+        if (charset == null) {
+          headers['Content-Type'] = 'application/json';
+        } else {
+          headers['Content-Type'] = 'application/json; charset=$charset';
+        }
         return customPost(url, jsonEncode(body), headers,
             badCertificateCallback: badCertificateCallback,
             connectionTimeout: connectionTimeout,
             responseTimeout: responseTimeout,
             adjustTiming: adjustTiming,
-            intervalMs: intervalMs);
+            intervalMs: intervalMs,
+            resType: resType);
     }
   }
 
@@ -86,15 +109,25 @@ class UtilHttpsForNative {
   /// If consecutive calls are made earlier than this,
   /// they will wait until this interval before being executed.
   /// The unit is milliseconds.
+  /// * [resType] : Formatting the return value from the server.
+  ///
+  /// The return value will be formatted as follows:
+  ///
+  /// For json: ServerResponse.resBody will contain the JSON encoded return value.
+  ///
+  /// For byte: ServerResponse.resBody will contain the return value in the format { "r" : Uint8list }.
+  ///
+  /// For text: ServerResponse.resBody will contain the return value in the format { "r" : UTF-8 text }.
   static Future<ServerResponse> customPost(
       String url, Object? body, Map<String, String> headers,
       {Encoding? encoding,
       bool Function(X509Certificate cert, String host, int port)?
           badCertificateCallback,
       Duration connectionTimeout = const Duration(seconds: 10),
-      Duration responseTimeout = const Duration(seconds: 10),
+      Duration responseTimeout = const Duration(seconds: 60),
       bool adjustTiming = true,
-      intervalMs = 1200}) async {
+      intervalMs = 1200,
+      EnumServerResponseType resType = EnumServerResponseType.json}) async {
     if (adjustTiming) {
       await TimingManager().adjustTiming(intervalMs: intervalMs);
     }
@@ -115,9 +148,9 @@ class UtilHttpsForNative {
               headers: headers, body: body, encoding: encoding)
           .timeout(responseTimeout);
       if (r.statusCode == 200) {
-        return UtilServerResponse.success(r);
+        return UtilServerResponse.success(r, resType: resType);
       } else {
-        return UtilServerResponse.serverError(r);
+        return UtilServerResponse.serverError(r, resType: resType);
       }
     } on SocketException catch (e) {
       // connection timeout

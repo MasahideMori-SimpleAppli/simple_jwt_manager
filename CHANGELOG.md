@@ -1,3 +1,9 @@
+## 0.0.21
+
+* UtilHttp and UtilHttpsForNative have been improved to make it easier to specify the charset of HTTP headers.
+* ROPCClient and ROPCClientForNative now allow you to specify the charset of HTTP headers in the communication.
+* Enhanced UtilHttpsForNative to add byte and text server response types.
+
 ## 0.0.20
 
 * Added an optional argument called updateJwtCallback to ROPCClient and ROPCClientForNative.

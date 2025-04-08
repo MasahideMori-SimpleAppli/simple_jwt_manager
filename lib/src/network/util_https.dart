@@ -33,27 +33,38 @@ class UtilHttps {
   /// For byte: ServerResponse.resBody will contain the return value in the format { "r" : Uint8list }.
   ///
   /// For text: ServerResponse.resBody will contain the return value in the format { "r" : UTF-8 text }.
+  /// * [charset] : Use this when you want to explicitly specify the charset in the HTTP header.
   static Future<ServerResponse> post(
       String url, Map<String, dynamic> body, EnumPostEncodeType type,
       {String? jwt,
       Duration timeout = const Duration(seconds: 10),
       bool adjustTiming = true,
       intervalMs = 1200,
-      EnumServerResponseType resType = EnumServerResponseType.json}) async {
+      EnumServerResponseType resType = EnumServerResponseType.json,
+      String? charset}) async {
     Map<String, String> headers = {};
     if (jwt != null) {
       headers['Authorization'] = 'Bearer $jwt';
     }
     switch (type) {
       case EnumPostEncodeType.urlEncoded:
-        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        if (charset == null) {
+          headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        } else {
+          headers['Content-Type'] =
+              'application/x-www-form-urlencoded; charset=$charset';
+        }
         return customPost(url, Uri(queryParameters: body).query, headers,
             timeout: timeout,
             adjustTiming: adjustTiming,
             intervalMs: intervalMs,
             resType: resType);
       case EnumPostEncodeType.json:
-        headers['Content-Type'] = 'application/json';
+        if (charset == null) {
+          headers['Content-Type'] = 'application/json';
+        } else {
+          headers['Content-Type'] = 'application/json; charset=$charset';
+        }
         return customPost(url, jsonEncode(body), headers,
             timeout: timeout,
             adjustTiming: adjustTiming,

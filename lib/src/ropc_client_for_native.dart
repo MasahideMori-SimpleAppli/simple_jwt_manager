@@ -22,7 +22,7 @@ import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart'
 class ROPCClientForNative {
   // static parameters
   static const String className = "ROPCClientForNative";
-  static const int version = 3;
+  static const int version = 4;
 
   // parameters
   late final String _registerUrl;
@@ -36,6 +36,7 @@ class ROPCClientForNative {
   late final Duration _responseTimeout;
   late final int refreshMarginMs;
   final void Function(Map<String, dynamic> savedData)? updateJwtCallback;
+  final String? charset;
 
   // tokens
   String? _accessToken;
@@ -57,7 +58,10 @@ class ROPCClientForNative {
   /// * [refreshURL] : A URL for reissuing a token using a refresh token.
   /// * [signOutURL] : The URL for signOut (revoke) the token.
   /// * [deleteUserURL] : This is the URL for deleting a user.
-  /// * [timeout] : Timeout period for server access. Default is 1 min.
+  /// * [connectionTimeout] : Timeout period for server connection. Default is 10 sec.
+  /// * [responseTimeout] : Timeout period for server response. Default is 1 min.
+  /// * [charset] : Use this when you want to explicitly specify the charset in
+  /// the HTTP header.
   /// * [badCertificateCallback] : Returns true if you are using a local server
   /// that uses a self-signed certificate.
   /// * [savedData] : If there is token information previously saved by
@@ -80,6 +84,7 @@ class ROPCClientForNative {
       required String deleteUserURL,
       Duration? connectionTimeout,
       Duration? responseTimeout,
+      this.charset,
       bool Function(X509Certificate cert, String host, int port)?
           badCertificateCallback,
       Map<String, dynamic>? savedData,
@@ -217,7 +222,8 @@ class ROPCClientForNative {
         badCertificateCallback: _badCertificateCallback,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         try {
@@ -266,7 +272,8 @@ class ROPCClientForNative {
         badCertificateCallback: _badCertificateCallback,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         _clearToken();
@@ -333,7 +340,8 @@ class ROPCClientForNative {
         badCertificateCallback: _badCertificateCallback,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         // トークンを取得して保存
@@ -420,7 +428,8 @@ class ROPCClientForNative {
         badCertificateCallback: _badCertificateCallback,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         if (isRefreshToken) {
@@ -492,7 +501,8 @@ class ROPCClientForNative {
         badCertificateCallback: _badCertificateCallback,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
-        adjustTiming: false);
+        adjustTiming: false,
+        charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         try {
