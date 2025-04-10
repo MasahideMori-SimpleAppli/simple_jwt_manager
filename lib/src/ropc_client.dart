@@ -19,7 +19,7 @@ import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart'
 class ROPCClient {
   // static parameters
   static const String className = "ROPCClient";
-  static const int version = 6;
+  static const int version = 7;
 
   // parameters
   late final String _registerUrl;
@@ -498,18 +498,13 @@ class ROPCClient {
         } catch (e) {
           return UtilServerResponse.otherError('Invalid token format');
         }
+      case EnumServerResponseStatus.signInRequired:
+        // リフレッシュトークンが期限切れの場合、クライアント側のトークンをクリアする
+        _clearToken();
+        return UtilServerResponse.signInRequired(res: r.response);
       case EnumServerResponseStatus.serverError:
-        if (r.response != null) {
-          // リフレッシュトークンが期限切れの場合、クライアント側のトークンをクリアする
-          if (r.response!.statusCode == 401) {
-            _clearToken();
-            return UtilServerResponse.signInRequired();
-          }
-        }
-        return r;
       case EnumServerResponseStatus.timeout:
       case EnumServerResponseStatus.otherError:
-      case EnumServerResponseStatus.signInRequired:
         return r;
     }
   }

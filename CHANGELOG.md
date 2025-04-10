@@ -1,3 +1,10 @@
+## 0.0.22
+
+* The classification of server responses has been made a bit stricter in UtilHttp and UtilHttpsForNative.
+* This change makes EnumServerResponseStatus more intuitive and easier to use outside of this library.
+* Both ROPCClient and ROPCClientForNative are affected by this change.
+* See the new examples for code that conforms to this change.
+
 ## 0.0.21
 
 * UtilHttp and UtilHttpsForNative have been improved to make it easier to specify the charset of HTTP headers.

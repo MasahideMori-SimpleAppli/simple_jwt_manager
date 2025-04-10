@@ -10,9 +10,22 @@ import '../../simple_jwt_manager.dart';
 class UtilHttpsForNative {
   /// (en) Build the https and POST it.
   /// This class is not available in Flutter web.
+  /// When "200 <= statusCode <= 299", this method returns an object with
+  /// EnumServerResponseStatus.success when communication was successful.
+  /// In addition, for 401, it marks　EnumServerResponseStatus.signInRequired,
+  /// for all other errors, whether the error is in the 400 or 500 range,
+  /// it marks EnumServerResponseStatus.serverError,
+  /// a communication timeout is marked as EnumServerResponseStatus.timeout,
+  /// and other unknown errors are marked as EnumServerResponseStatus.otherError.
   ///
   /// (ja) Httpsを構築してPOSTします。
   /// このクラスはFlutter webでは利用できません。
+  /// このメソッドは「200 <= statusCode <= 299」の時、
+  /// EnumServerResponseStatus.successを持つ通信成功時のオブジェクトを返します。
+  /// また、401ではEnumServerResponseStatus.signInRequiredを、
+  /// それ以外の場合は400番台でも500番台でもEnumServerResponseStatus.serverErrorを、
+  /// 通信時のタイムアウトはEnumServerResponseStatus.timeoutを、
+  /// その他の未知のエラーはEnumServerResponseStatus.otherErrorとしてマークします。
   ///
   /// * [url] : The URL to post to. Only https is permitted;
   /// anything else will return an error response.
@@ -90,9 +103,22 @@ class UtilHttpsForNative {
   /// (en) Build the https and POST it.
   /// This is a more customizable version, if you want a quicker experience
   /// you can use post function instead.
+  /// When "200 <= statusCode <= 299", this method returns an object with
+  /// EnumServerResponseStatus.success when communication was successful.
+  /// In addition, for 401, it marks　EnumServerResponseStatus.signInRequired,
+  /// for all other errors, whether the error is in the 400 or 500 range,
+  /// it marks EnumServerResponseStatus.serverError,
+  /// a communication timeout is marked as EnumServerResponseStatus.timeout,
+  /// and other unknown errors are marked as EnumServerResponseStatus.otherError.
   ///
   /// (ja) Httpsを構築してPOSTします。
   /// これはカスタマイズ性を高めたバージョンで、簡単に利用したい場合は代わりにpostが使えます。
+  /// このメソッドは「200 <= statusCode <= 299」の時、
+  /// EnumServerResponseStatus.successを持つ通信成功時のオブジェクトを返します。
+  /// また、401ではEnumServerResponseStatus.signInRequiredを、
+  /// それ以外の場合は400番台でも500番台でもEnumServerResponseStatus.serverErrorを、
+  /// 通信時のタイムアウトはEnumServerResponseStatus.timeoutを、
+  /// その他の未知のエラーはEnumServerResponseStatus.otherErrorとしてマークします。
   ///
   /// * [url] : The URL to post to. Only https is permitted;
   /// anything else will return an error response.
@@ -147,8 +173,10 @@ class UtilHttpsForNative {
           .post(Uri.parse(httpsURL),
               headers: headers, body: body, encoding: encoding)
           .timeout(responseTimeout);
-      if (r.statusCode == 200) {
+      if (r.statusCode >= 200 && r.statusCode <= 299) {
         return UtilServerResponse.success(r, resType: resType);
+      } else if (r.statusCode == 401) {
+        return UtilServerResponse.signInRequired(res: r, resType: resType);
       } else {
         return UtilServerResponse.serverError(r, resType: resType);
       }

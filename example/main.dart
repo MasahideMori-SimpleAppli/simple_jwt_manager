@@ -171,8 +171,9 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle other error case.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // That doesn't usually happen here.
-                              throw Exception();
+                              // TODO: Handle other error case.
+                              // The username or password is incorrect.
+                              break;
                           }
                         });
                       },
@@ -198,8 +199,9 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle other error case.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // That doesn't usually happen here.
-                              throw Exception();
+                              // TODO: Handle other error case.
+                              // The refresh token has expired.
+                              break;
                           }
                         });
                       },
@@ -227,8 +229,9 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle other error case.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // That doesn't usually happen here.
-                              throw Exception();
+                              // TODO: Handle other error case.
+                              // The username or password is incorrect.
+                              break;
                           }
                         });
                       },
@@ -312,11 +315,13 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle this case.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // TODO: Handle this case.
+                              // TODO The token has expired or was not obtained,
+                              //  so please go to the sign-in screen.
                               break;
                           }
                         } else {
-                          // TODO The token has expired or was not obtained, so please go to the sign-in screen.
+                          // TODO The token has expired or was not obtained,
+                          //  so please go to the sign-in screen.
                           debugPrint("The token is null.");
                         }
                       },

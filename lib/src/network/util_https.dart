@@ -9,6 +9,12 @@ class UtilHttps {
   /// (en) Build the https and POST it.
   ///
   /// (ja) Httpsを構築してPOSTします。
+  /// このメソッドは「200 <= statusCode <= 299」の時、
+  /// EnumServerResponseStatus.successを持つ通信成功時のオブジェクトを返します。
+  /// また、401ではEnumServerResponseStatus.signInRequiredを、
+  /// それ以外の場合は400番台でも500番台でもEnumServerResponseStatus.serverErrorを、
+  /// 通信時のタイムアウトはEnumServerResponseStatus.timeoutを、
+  /// その他の未知のエラーはEnumServerResponseStatus.otherErrorとしてマークします。
   ///
   /// * [url] : The URL to post to. Only https is permitted
   /// anything else will return an error response.
@@ -79,6 +85,12 @@ class UtilHttps {
   ///
   /// (ja) Httpsを構築してPOSTします。
   /// これはカスタマイズ性を高めたバージョンで、簡単に利用したい場合は代わりにpostが使えます。
+  /// このメソッドは「200 <= statusCode <= 299」の時、
+  /// EnumServerResponseStatus.successを持つ通信成功時のオブジェクトを返します。
+  /// また、401ではEnumServerResponseStatus.signInRequiredを、
+  /// それ以外の場合は400番台でも500番台でもEnumServerResponseStatus.serverErrorを、
+  /// 通信時のタイムアウトはEnumServerResponseStatus.timeoutを、
+  /// その他の未知のエラーはEnumServerResponseStatus.otherErrorとしてマークします。
   ///
   /// * [url] : The URL to post to. Only https is permitted
   /// anything else will return an error response.
@@ -117,8 +129,10 @@ class UtilHttps {
           .post(Uri.parse(httpsURL),
               headers: headers, body: body, encoding: encoding)
           .timeout(timeout);
-      if (r.statusCode == 200) {
+      if (r.statusCode >= 200 && r.statusCode <= 299) {
         return UtilServerResponse.success(r, resType: resType);
+      } else if (r.statusCode == 401) {
+        return UtilServerResponse.signInRequired(res: r, resType: resType);
       } else {
         return UtilServerResponse.serverError(r, resType: resType);
       }
