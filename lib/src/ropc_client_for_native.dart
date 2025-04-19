@@ -61,7 +61,8 @@ class ROPCClientForNative {
   /// * [connectionTimeout] : Timeout period for server connection. Default is 10 sec.
   /// * [responseTimeout] : Timeout period for server response. Default is 1 min.
   /// * [charset] : Use this when you want to explicitly specify the charset in
-  /// the HTTP header.
+  /// the HTTP header. If null, it will automatically be set to utf-8. Also,
+  /// if you enter an empty string, no specification will be made.
   /// * [badCertificateCallback] : Returns true if you are using a local server
   /// that uses a self-signed certificate.
   /// * [savedData] : If there is token information previously saved by

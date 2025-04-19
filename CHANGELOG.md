@@ -1,13 +1,18 @@
+## 0.0.23
+
+* When communicating use UtilHttps and UtilHttpsForNative, if charset is null, utf-8 is now forcibly applied. From now on, if you do not want to specify charset explicitly, you will need to enter an empty string.
+* The doc has been changed due to the change in charset handling.
+
 ## 0.0.22
 
-* The classification of server responses has been made a bit stricter in UtilHttp and UtilHttpsForNative.
+* The classification of server responses has been made a bit stricter in UtilHttps and UtilHttpsForNative.
 * This change makes EnumServerResponseStatus more intuitive and easier to use outside of this library.
 * Both ROPCClient and ROPCClientForNative are affected by this change.
 * See the new examples for code that conforms to this change.
 
 ## 0.0.21
 
-* UtilHttp and UtilHttpsForNative have been improved to make it easier to specify the charset of HTTP headers.
+* UtilHttps and UtilHttpsForNative have been improved to make it easier to specify the charset of HTTP headers.
 * ROPCClient and ROPCClientForNative now allow you to specify the charset of HTTP headers in the communication.
 * Enhanced UtilHttpsForNative to add byte and text server response types.
 

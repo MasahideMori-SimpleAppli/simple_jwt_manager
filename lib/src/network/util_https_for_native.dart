@@ -48,12 +48,17 @@ class UtilHttpsForNative {
   ///
   /// The return value will be formatted as follows:
   ///
-  /// For json: ServerResponse.resBody will contain the JSON encoded return value.
+  /// For json: ServerResponse.resBody will contain the JSON encoded
+  /// return value.
   ///
-  /// For byte: ServerResponse.resBody will contain the return value in the format { "r" : Uint8list }.
+  /// For byte: ServerResponse.resBody will contain the return value in the
+  /// format { "r" : Uint8list }.
   ///
-  /// For text: ServerResponse.resBody will contain the return value in the format { "r" : UTF-8 text }.
-  /// * [charset] : Use this when you want to explicitly specify the charset in the HTTP header.
+  /// For text: ServerResponse.resBody will contain the return value in the
+  /// format { "r" : UTF-8 text }.
+  /// * [charset] : Use this when you want to explicitly specify the charset in
+  /// the HTTP header. If null, it will automatically be set to utf-8. Also,
+  /// if you enter an empty string, no specification will be made.
   static Future<ServerResponse> post(
       String url, Map<String, dynamic> body, EnumPostEncodeType type,
       {String? jwt,
@@ -72,6 +77,9 @@ class UtilHttpsForNative {
     switch (type) {
       case EnumPostEncodeType.urlEncoded:
         if (charset == null) {
+          headers['Content-Type'] =
+              'application/x-www-form-urlencoded; charset=utf-8';
+        } else if (charset == "") {
           headers['Content-Type'] = 'application/x-www-form-urlencoded';
         } else {
           headers['Content-Type'] =
@@ -86,6 +94,8 @@ class UtilHttpsForNative {
             resType: resType);
       case EnumPostEncodeType.json:
         if (charset == null) {
+          headers['Content-Type'] = 'application/json; charset=utf-8';
+        } else if (charset == "") {
           headers['Content-Type'] = 'application/json';
         } else {
           headers['Content-Type'] = 'application/json; charset=$charset';

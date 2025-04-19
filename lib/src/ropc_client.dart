@@ -54,7 +54,8 @@ class ROPCClient {
   /// * [deleteUserURL] : This is the URL for deleting a user.
   /// * [timeout] : Timeout period for server access. Default is 1 min.
   /// * [charset] : Use this when you want to explicitly specify the charset in
-  /// the HTTP header.
+  /// the HTTP header. If null, it will automatically be set to utf-8. Also,
+  /// if you enter an empty string, no specification will be made.
   /// * [savedData] : If there is token information previously saved by
   /// this class's toDict function, you can restore the token by setting it.
   /// * [refreshMarginMs] : The access token expiration time will be estimated
