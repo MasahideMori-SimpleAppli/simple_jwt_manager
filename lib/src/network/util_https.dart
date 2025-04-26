@@ -48,7 +48,7 @@ class UtilHttps {
   static Future<ServerResponse> post(
       String url, Map<String, dynamic> body, EnumPostEncodeType type,
       {String? jwt,
-      Duration timeout = const Duration(seconds: 10),
+      Duration timeout = const Duration(seconds: 30),
       bool adjustTiming = true,
       intervalMs = 1200,
       EnumServerResponseType resType = EnumServerResponseType.json,
@@ -126,7 +126,7 @@ class UtilHttps {
   static Future<ServerResponse> customPost(
       String url, Object? body, Map<String, String> headers,
       {Encoding? encoding,
-      Duration timeout = const Duration(seconds: 10),
+      Duration timeout = const Duration(seconds: 30),
       bool adjustTiming = true,
       intervalMs = 1200,
       EnumServerResponseType resType = EnumServerResponseType.json}) async {

@@ -64,7 +64,7 @@ class UtilHttpsForNative {
       {String? jwt,
       bool Function(X509Certificate cert, String host, int port)?
           badCertificateCallback,
-      Duration connectionTimeout = const Duration(seconds: 10),
+      Duration connectionTimeout = const Duration(seconds: 30),
       Duration responseTimeout = const Duration(seconds: 60),
       bool adjustTiming = true,
       intervalMs = 1200,
@@ -159,7 +159,7 @@ class UtilHttpsForNative {
       {Encoding? encoding,
       bool Function(X509Certificate cert, String host, int port)?
           badCertificateCallback,
-      Duration connectionTimeout = const Duration(seconds: 10),
+      Duration connectionTimeout = const Duration(seconds: 30),
       Duration responseTimeout = const Duration(seconds: 60),
       bool adjustTiming = true,
       intervalMs = 1200,

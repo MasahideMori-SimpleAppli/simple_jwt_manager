@@ -1,3 +1,8 @@
+## 0.0.24
+
+* The default timeout for UtilHttps has been changed to 30 seconds.
+* The default connectionTimeout for UtilHttpsForNative has been changed to 30 seconds.
+
 ## 0.0.23
 
 * When communicating use UtilHttps and UtilHttpsForNative, if charset is null, utf-8 is now forcibly applied. From now on, if you do not want to specify charset explicitly, you will need to enter an empty string.
