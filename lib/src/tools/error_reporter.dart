@@ -206,7 +206,7 @@ class ErrorReporter {
           intervalMs: intervalMs,
           resType: resType,
           charset: charset);
-      if (response.response?.statusCode != 200) {
+      if (response.resultStatus != EnumServerResponseStatus.success) {
         throw Exception('Server responded with ${response.resBody}');
       }
     } catch (e) {
