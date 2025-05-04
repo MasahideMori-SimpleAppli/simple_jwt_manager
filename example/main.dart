@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 // import 'dart:convert';
 
+// TODO select reporter version.
+late final ErrorReporter eReporter; // web or native
+// late final ErrorReporterForNative eReporter; // native, use self-signed certificates
+
 // TODO select client version.
 late final ROPCClient ropcClient; // web or native
 // late final ROPCClientForNative
@@ -17,8 +21,30 @@ const String signOutURL = "https://your end point url";
 const String deleteUserURL = "https://your end point url";
 // URL for posting data with JWT in auth header.
 const String postingDataURL = "https://your end point url";
+const String errorReportURL = "https://your end point url";
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Error report option.
+  // For web or native device.
+  ErrorReporter().init(
+      endpointUrl: errorReportURL,
+      appVersion: "1.0.0",
+      extraInfo: {"platform": "web"});
+  // For native device only.
+  // This version can support self-signed certificates.
+  // ErrorReporterForNative().init(
+  //     endpointUrl: errorReportURL,
+  //     appVersion: "1.0.0",
+  //     extraInfo: {"platform" : "Android etc.."},
+  //     badCertificateCallback: (X509Certificate cert, String host, int port) {
+  //       // TODO
+  //       // The condition is checked here, and if it returns true,
+  //       // self-signed certificates are allowed.
+  //       return true;
+  //     });
+
   Map<String, dynamic>? savedData;
   // TODO: If necessary, restore the token in your own way.
   // savedData = jsonDecode(The token from storage etc.);
@@ -310,9 +336,13 @@ class _MyAppState extends State<MyApp> {
                               break;
                             case EnumServerResponseStatus.serverError:
                               // TODO: Handle this case.
+                              // TODO: You can also use the error reporter for custom error reporting.
+                              // ErrorReporter().reportError("Error detail or Error object", null);
                               break;
                             case EnumServerResponseStatus.otherError:
                               // TODO: Handle this case.
+                              // TODO: You can also use the error reporter for custom error reporting.
+                              // ErrorReporter().reportError("Error detail or Error object", null);
                               break;
                             case EnumServerResponseStatus.signInRequired:
                               // TODO The token has expired or was not obtained,

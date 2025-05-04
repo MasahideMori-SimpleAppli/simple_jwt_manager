@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_grant_type.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_json_keys_from_server.dart';
@@ -19,7 +19,7 @@ import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart'
 class ROPCClient {
   // static parameters
   static const String className = "ROPCClient";
-  static const int version = 7;
+  static const int version = 8;
 
   // parameters
   late final String _registerUrl;
@@ -436,12 +436,14 @@ class ROPCClient {
   /// it using the refresh token,
   /// but if that fails, null is returned.
   /// Also, null is returned if the user is not signed in.
+  /// Debug builds only now display details when a token refresh fails.
   ///
   /// (ja) JWTトークンを取得します。
   /// キャッシュされたトークンの期限が残っている場合、キャッシュされたトークンが返されます。
   /// トークンが期限切れの場合はリフレッシュトークンを使ってリフレッシュを試みますが、
   /// 失敗した場合はnullを返します。
   /// また、サインイン状態では無い場合もnullが返されます。
+  /// デバッグビルドでのみ、トークンのリフレッシュ失敗時に詳細が表示されます。
   Future<String?> getToken() async {
     if (_refreshToken == null) {
       return null;
@@ -449,7 +451,9 @@ class ROPCClient {
     if (_isTokenExpired()) {
       final ServerResponse res = await refreshAndGetNewToken();
       if (res.resultStatus != EnumServerResponseStatus.success) {
-        debugPrint(res.errorDetail);
+        if (kDebugMode) {
+          debugPrint(res.errorDetail);
+        }
         return null;
       }
     }

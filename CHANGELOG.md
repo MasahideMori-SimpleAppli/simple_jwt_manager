@@ -1,3 +1,10 @@
+## 0.0.25
+
+* Added ErrorReporter and ErrorReporterForNative classes.
+* The usage of the new class has been added to the Example.
+* In UtilHttps and UtilHttpsForNative, the timing of checking whether the URL is https has been changed. Now, if the URL is not https, an exception will be thrown.
+* The debugPrints are now only printed in debug mode.
+
 ## 0.0.24
 
 * The default timeout for UtilHttps has been changed to 30 seconds.

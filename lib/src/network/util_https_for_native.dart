@@ -164,6 +164,7 @@ class UtilHttpsForNative {
       bool adjustTiming = true,
       intervalMs = 1200,
       EnumServerResponseType resType = EnumServerResponseType.json}) async {
+    final String httpsURL = UtilCheckURL.validateHttpsUrl(url);
     if (adjustTiming) {
       await TimingManager().adjustTiming(intervalMs: intervalMs);
     }
@@ -177,7 +178,6 @@ class UtilHttpsForNative {
     client.connectionTimeout = connectionTimeout;
     final ioClient = IOClient(client);
     try {
-      final String httpsURL = UtilCheckURL.validateHttpsUrl(url);
       // ヘッダー設定
       final http.Response r = await ioClient
           .post(Uri.parse(httpsURL),

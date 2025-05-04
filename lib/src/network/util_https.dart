@@ -130,11 +130,11 @@ class UtilHttps {
       bool adjustTiming = true,
       intervalMs = 1200,
       EnumServerResponseType resType = EnumServerResponseType.json}) async {
+    final String httpsURL = UtilCheckURL.validateHttpsUrl(url);
     try {
       if (adjustTiming) {
         await TimingManager().adjustTiming(intervalMs: intervalMs);
       }
-      final String httpsURL = UtilCheckURL.validateHttpsUrl(url);
       final http.Response r = await http
           .post(Uri.parse(httpsURL),
               headers: headers, body: body, encoding: encoding)

@@ -1,0 +1,244 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:simple_jwt_manager/simple_jwt_manager.dart';
+
+/// (en) An error reporting class for native devices.
+/// This supports the use of self-signed certificates.
+///
+/// (ja) ネイティブデバイス用の、エラー報告のためのクラスです。
+/// こちらは自己署名証明書の利用をサポートしています。
+///
+/// Author Masahide Mori
+///
+/// First edition creation date 2025-05-04 18:29:14
+class ErrorReporterForNative {
+  static final ErrorReporterForNative _instance =
+      ErrorReporterForNative._internal();
+
+  factory ErrorReporterForNative() => _instance;
+
+  ErrorReporterForNative._internal();
+
+  late String _endpointUrl;
+  late String _appVersion;
+  Map<String, dynamic>? _extraInfo;
+
+  Duration _rateLimitWindow = Duration(seconds: 60);
+  int _maxReportsPerWindow = 3;
+
+  Future<void> Function(Map<String, dynamic> report)? _onSendFailure;
+
+  final List<DateTime> _sendTimestamps = [];
+
+  /// (en)　Initialize this class. Run this after calling
+  /// WidgetsFlutterBinding.ensureInitialized(); in main.dart.
+  /// Also, in debug builds only, detailed information will be displayed in
+  /// debugPrint when limits are exceeded or a transmission error occurs.
+  ///
+  /// (ja) このクラスを初期化します。main.dartで
+  /// WidgetsFlutterBinding.ensureInitialized();を呼び出した後に実行してください。
+  /// また、デバッグビルドでのみ、
+  /// 制限超過や送信エラー時にはdebugPrintで詳細出るようになっています。
+  ///
+  /// * [endpointUrl] : The endpoint to which error information is sent.
+  /// The information sent is JSON and includes the following String values:
+  /// errorMsg, stackTrace, timestamp (iso8601), _appVersion,
+  /// and optional extraInfo.
+  /// * [appVersion] : Frontend app version information.
+  /// * [rateLimitWindow] : A unit of time for limiting the amount of
+  /// error reporting. The default value is Duration(seconds: 60).
+  /// * [maxReportsPerWindow] : Specifies how many times an error report can be
+  /// sent within a unit time. The default value is 3.
+  /// * [extraInfo] : Any additional information you want to include in the
+  /// error report
+  /// * [onSendFailure] : A callback if the error report fails. For example,
+  /// you can add an action to save the reportData to storage.
+  /// * [getJWT] : If you need authenticated error reporting,
+  /// you can add a function to get the token.
+  /// * [badCertificateCallback] : Returns true if you are using a local server
+  /// that uses a self-signed certificate.
+  /// * [connectionTimeout] : The connection timeout.
+  /// * [responseTimeout] : The response timeout.
+  /// * [adjustTiming] : Specify true to automatically adjust the timing.
+  /// * [intervalMs] : The minimum interval between calls that is
+  /// automatically adjusted if adjustTiming is True.
+  /// If consecutive calls are made earlier than this,
+  /// they will wait until this interval before being executed.
+  /// The unit is milliseconds.
+  /// * [resType] : Formatting the return value from the server.
+  ///
+  /// The return value will be formatted as follows:
+  ///
+  /// For json: ServerResponse.resBody will contain the JSON encoded
+  /// return value.
+  ///
+  /// For byte: ServerResponse.resBody will contain the return value in the
+  /// format { "r" : Uint8list }.
+  ///
+  /// For text: ServerResponse.resBody will contain the return value in the
+  /// format { "r" : UTF-8 text }.
+  /// * [charset] : Use this when you want to explicitly specify the charset in
+  /// the HTTP header. If null, it will automatically be set to utf-8. Also,
+  /// if you enter an empty string, no specification will be made.
+  Future<void> init(
+      {required String endpointUrl,
+      required String appVersion,
+      Duration? rateLimitWindow,
+      int? maxReportsPerWindow,
+      bool useDebugPrint = true,
+      Map<String, dynamic>? extraInfo,
+      Future<void> Function(Map<String, dynamic> reportData)? onSendFailure,
+      Future<String> Function()? getJWT,
+      bool Function(X509Certificate cert, String host, int port)?
+          badCertificateCallback,
+      Duration connectionTimeout = const Duration(seconds: 30),
+      Duration responseTimeout = const Duration(seconds: 60),
+      bool adjustTiming = true,
+      intervalMs = 1200,
+      EnumServerResponseType resType = EnumServerResponseType.json,
+      String? charset}) async {
+    _endpointUrl = endpointUrl;
+    _appVersion = appVersion;
+    _rateLimitWindow = rateLimitWindow ?? Duration(seconds: 60);
+    _maxReportsPerWindow = maxReportsPerWindow ?? 3;
+    _extraInfo = extraInfo;
+    _onSendFailure = onSendFailure;
+
+    // 内部で起こったエラーを自動でキャッチして送信する設定。
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      reportError(details.exception, details.stack,
+          getJWT: getJWT,
+          badCertificateCallback: badCertificateCallback,
+          connectionTimeout: connectionTimeout,
+          responseTimeout: responseTimeout,
+          adjustTiming: adjustTiming,
+          intervalMs: intervalMs,
+          resType: resType,
+          charset: charset);
+    };
+    PlatformDispatcher.instance.onError = (error, stack) {
+      reportError(error, stack,
+          getJWT: getJWT,
+          badCertificateCallback: badCertificateCallback,
+          connectionTimeout: connectionTimeout,
+          responseTimeout: responseTimeout,
+          adjustTiming: adjustTiming,
+          intervalMs: intervalMs,
+          resType: resType,
+          charset: charset);
+      return true;
+    };
+  }
+
+  /// (en) Sends the error content to the backend.
+  /// This method can be used alone after init.
+  ///
+  /// (ja) エラー内容をバックエンドに送信します。
+  /// このメソッドはinit後であれば単体でも利用できます。
+  ///
+  /// * [error] : Error object. Must be able to convert to an appropriate
+  /// message using toString.
+  /// * [stackTrace] : Stack trace when an error occurred.
+  /// If null is specified, the string null will be sent.
+  /// * [customExtraInfo] : Additional error information used when using this
+  /// function other than auto-submission.
+  /// This information will be sent to the backend in addition to extraInfo.
+  /// * [getJWT] : If you need authenticated error reporting,
+  /// you can add a function to get the token.
+  /// * [badCertificateCallback] : Returns true if you are using a local server
+  /// that uses a self-signed certificate.
+  /// * [connectionTimeout] : The connection timeout.
+  /// * [responseTimeout] : The response timeout.
+  /// * [adjustTiming] : Specify true to automatically adjust the timing.
+  /// * [intervalMs] : The minimum interval between calls that is
+  /// automatically adjusted if adjustTiming is True.
+  /// If consecutive calls are made earlier than this,
+  /// they will wait until this interval before being executed.
+  /// The unit is milliseconds.
+  /// * [resType] : Formatting the return value from the server.
+  ///
+  /// The return value will be formatted as follows:
+  ///
+  /// For json: ServerResponse.resBody will contain the JSON encoded
+  /// return value.
+  ///
+  /// For byte: ServerResponse.resBody will contain the return value in the
+  /// format { "r" : Uint8list }.
+  ///
+  /// For text: ServerResponse.resBody will contain the return value in the
+  /// format { "r" : UTF-8 text }.
+  /// * [charset] : Use this when you want to explicitly specify the charset in
+  /// the HTTP header. If null, it will automatically be set to utf-8. Also,
+  /// if you enter an empty string, no specification will be made.
+  Future<void> reportError(Object error, StackTrace? stackTrace,
+      {Map<String, dynamic>? customExtraInfo,
+      Future<String> Function()? getJWT,
+      bool Function(X509Certificate cert, String host, int port)?
+          badCertificateCallback,
+      Duration connectionTimeout = const Duration(seconds: 30),
+      Duration responseTimeout = const Duration(seconds: 60),
+      bool adjustTiming = true,
+      intervalMs = 1200,
+      EnumServerResponseType resType = EnumServerResponseType.json,
+      String? charset}) async {
+    final now = DateTime.now();
+
+    // JWTが必要な場合は取得。
+    String? jwt;
+    if (getJWT != null) {
+      jwt = await getJWT();
+    }
+
+    // エラーレポートが無限ループなどにならないように、
+    // 指定時間中の送信上限を超えたら無視する設定。
+    _sendTimestamps.removeWhere((t) => now.difference(t) > _rateLimitWindow);
+    if (_sendTimestamps.length >= _maxReportsPerWindow) {
+      if (kDebugMode) {
+        debugPrint('[ErrorReporter] Rate limit exceeded. Error suppressed.');
+      }
+      return;
+    }
+    _sendTimestamps.add(now);
+
+    // 基本の送信データを設定。
+    final Map<String, dynamic> reportData = {
+      'errorMsg': error.toString(),
+      'stackTrace': stackTrace != null ? stackTrace.toString() : "null",
+      'timestamp': now.toIso8601String(),
+      'appVersion': _appVersion,
+    };
+    // 追加情報があればマージ
+    if (_extraInfo != null) {
+      reportData.addAll(_extraInfo!);
+    }
+    if (customExtraInfo != null) {
+      reportData.addAll(customExtraInfo);
+    }
+
+    // バックエンドに送信。
+    try {
+      final response = await UtilHttpsForNative.post(
+          _endpointUrl, reportData, EnumPostEncodeType.json,
+          jwt: jwt,
+          badCertificateCallback: badCertificateCallback,
+          connectionTimeout: connectionTimeout,
+          responseTimeout: responseTimeout,
+          adjustTiming: adjustTiming,
+          intervalMs: intervalMs,
+          resType: resType,
+          charset: charset);
+      if (response.response?.statusCode != 200) {
+        throw Exception('Server responded with ${response.resBody}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[ErrorReporter] Error report failed: $e');
+      }
+      if (_onSendFailure != null) {
+        await _onSendFailure!(reportData);
+      }
+    }
+  }
+}
