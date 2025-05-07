@@ -26,6 +26,9 @@ class ErrorReporter {
 
   final List<DateTime> _sendTimestamps = [];
 
+  // Flag to allow reporting.
+  bool allowReporting = true;
+
   /// (en)　Initialize this class. Run this after calling
   /// WidgetsFlutterBinding.ensureInitialized(); in main.dart.
   /// Also, in debug builds only, detailed information will be displayed in
@@ -34,7 +37,8 @@ class ErrorReporter {
   /// (ja) このクラスを初期化します。main.dartで
   /// WidgetsFlutterBinding.ensureInitialized();を呼び出した後に実行してください。
   /// また、デバッグビルドでのみ、
-  /// 制限超過や送信エラー時にはdebugPrintで詳細出るようになっています。
+  /// 制限超過や送信エラー時にはdebugPrintで詳細が出るようになっています。
+  /// allowReportingがfalseの場合はエラーはpostされず、onSendFailureも起動しません。
   ///
   /// * [endpointUrl] : The endpoint to which error information is sent.
   /// The information sent is JSON and includes the ErrorReportObj params.
@@ -117,9 +121,12 @@ class ErrorReporter {
 
   /// (en) Sends the error content to the backend.
   /// This method can be used alone after init.
+  /// If allowReporting is false, no errors will be posted and
+  /// onSendFailure will not fire.
   ///
   /// (ja) エラー内容をバックエンドに送信します。
   /// このメソッドはinit後であれば単体でも利用できます。
+  /// allowReportingがfalseの場合はエラーはpostされず、onSendFailureも起動しません。
   ///
   /// * [error] : Error object. Must be able to convert to an appropriate
   /// message using toString.
@@ -159,6 +166,10 @@ class ErrorReporter {
       intervalMs = 1200,
       EnumServerResponseType resType = EnumServerResponseType.json,
       String? charset}) async {
+    if (!allowReporting) {
+      return;
+    }
+
     final now = DateTime.now();
 
     // JWTが必要な場合は取得。

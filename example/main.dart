@@ -32,6 +32,12 @@ void main() async {
       endpointUrl: errorReportURL,
       appVersion: "1.0.0",
       extraInfo: {"platform": "web"});
+
+  // Set this to false if you don't want to send an error until
+  // you have the user's permission,
+  // then set it to true once permission has been granted.
+  ErrorReporter().allowReporting = true;
+
   // For native device only.
   // This version can support self-signed certificates.
   // ErrorReporterForNative().init(

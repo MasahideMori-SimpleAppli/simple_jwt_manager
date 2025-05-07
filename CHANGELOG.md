@@ -1,3 +1,7 @@
+## 0.0.27
+
+* Added allowReporting flag to ErrorReporter and ErrorReporterForNative. Added examples showing how to use this flag.
+
 ## 0.0.26
 
 * To facilitate server-side development, the ErrorReportObj class has been added, which stores basic error information used by ErrorReporter and ErrorReporterForNative, and the content sent has been changed. Please note that this is not compatible with version 0.0.25.
