@@ -42,16 +42,14 @@ class ErrorReporterForNative {
   /// 制限超過や送信エラー時にはdebugPrintで詳細出るようになっています。
   ///
   /// * [endpointUrl] : The endpoint to which error information is sent.
-  /// The information sent is JSON and includes the following String values:
-  /// errorMsg, stackTrace, timestamp (iso8601), _appVersion,
-  /// and optional extraInfo.
+  /// The information sent is JSON and includes the ErrorReportObj params.
   /// * [appVersion] : Frontend app version information.
   /// * [rateLimitWindow] : A unit of time for limiting the amount of
   /// error reporting. The default value is Duration(seconds: 60).
   /// * [maxReportsPerWindow] : Specifies how many times an error report can be
   /// sent within a unit time. The default value is 3.
-  /// * [extraInfo] : Any additional information you want to include in the
-  /// error report
+  /// * [extraInfo] : Additional information common to this app that is added
+  /// during initialization, such as the app's platform information.
   /// * [onSendFailure] : A callback if the error report fails. For example,
   /// you can add an action to save the reportData to storage.
   /// * [getJWT] : If you need authenticated error reporting,
@@ -141,10 +139,9 @@ class ErrorReporterForNative {
   /// * [error] : Error object. Must be able to convert to an appropriate
   /// message using toString.
   /// * [stackTrace] : Stack trace when an error occurred.
-  /// If null is specified, the string null will be sent.
-  /// * [customExtraInfo] : Additional error information used when using this
-  /// function other than auto-submission.
-  /// This information will be sent to the backend in addition to extraInfo.
+  /// If null is specified, the null will be sent.
+  /// * [customExtraInfo] : When reporting an individual error,
+  /// additional information, such as the location of the error, is added.
   /// * [getJWT] : If you need authenticated error reporting,
   /// you can add a function to get the token.
   /// * [badCertificateCallback] : Returns true if you are using a local server
@@ -202,20 +199,15 @@ class ErrorReporterForNative {
     }
     _sendTimestamps.add(now);
 
-    // 基本の送信データを設定。
-    final Map<String, dynamic> reportData = {
-      'errorMsg': error.toString(),
-      'stackTrace': stackTrace != null ? stackTrace.toString() : "null",
-      'timestamp': now.toIso8601String(),
-      'appVersion': _appVersion,
-    };
-    // 追加情報があればマージ
-    if (_extraInfo != null) {
-      reportData.addAll(_extraInfo!);
-    }
-    if (customExtraInfo != null) {
-      reportData.addAll(customExtraInfo);
-    }
+    // 送信データを設定。
+    final Map<String, dynamic> reportData = ErrorReportObj(
+            _appVersion,
+            error.toString(),
+            stackTrace?.toString(),
+            now.toIso8601String(),
+            _extraInfo,
+            customExtraInfo)
+        .toDict();
 
     // バックエンドに送信。
     try {
