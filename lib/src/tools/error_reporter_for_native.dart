@@ -83,7 +83,7 @@ class ErrorReporterForNative {
   /// * [charset] : Use this when you want to explicitly specify the charset in
   /// the HTTP header. If null, it will automatically be set to utf-8. Also,
   /// if you enter an empty string, no specification will be made.
-  Future<void> init(
+  void init(
       {required String endpointUrl,
       required String appVersion,
       Duration? rateLimitWindow,
@@ -99,7 +99,7 @@ class ErrorReporterForNative {
       bool adjustTiming = true,
       intervalMs = 1200,
       EnumServerResponseType resType = EnumServerResponseType.json,
-      String? charset}) async {
+      String? charset}) {
     _endpointUrl = endpointUrl;
     _appVersion = appVersion;
     _rateLimitWindow = rateLimitWindow ?? Duration(seconds: 60);

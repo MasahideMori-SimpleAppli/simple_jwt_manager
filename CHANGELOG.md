@@ -1,3 +1,7 @@
+## 0.0.28
+
+* Removed unnecessary Future from the init of ErrorReporter and ErrorReporterForNative.
+
 ## 0.0.27
 
 * Added allowReporting flag to ErrorReporter and ErrorReporterForNative. Added examples showing how to use this flag.
