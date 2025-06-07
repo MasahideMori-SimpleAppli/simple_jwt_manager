@@ -1,3 +1,10 @@
+## 0.0.29
+
+* The reportError method of the ErrorReporter and ErrorReporterForNative classes no longer throws an error in any case.
+* The internal processing of the reportError method of the ErrorReporter and ErrorReporterForNative classes has been improved and changed to a processing order that is less likely to cause problems.
+* The avoidDuplicate flag has been added to the options argument of the init method of the ErrorReporter and ErrorReporterForNative classes. It is enabled by default and will prevent duplicate errors from being sent.
+* Users can now set callbacks when Flutter errors occur in the init method of the ErrorReporter and ErrorReporterForNative classes, allowing this package to coexist with other error handling packages.
+
 ## 0.0.28
 
 * Removed unnecessary Future from the init of ErrorReporter and ErrorReporterForNative.
