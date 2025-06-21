@@ -505,7 +505,7 @@ class ROPCClient {
   /// Also, null is returned if the user is not signed in.
   /// Debug builds only now display details when a token refresh fails.
   /// If there is no refresh token or a signInRequired is returned from server,
-  /// the stream will notify you of the sign-out.
+  /// the stream will notify user of the sign-out.
   ///
   /// (ja) JWTトークンを取得します。
   /// キャッシュされたトークンの期限が残っている場合、キャッシュされたトークンが返されます。
@@ -539,7 +539,7 @@ class ROPCClient {
   /// Instead, use getToken.
   /// This uses the refresh token to obtain a new token and caches it.
   /// If there is no refresh token or a signInRequired is returned from server,
-  /// the stream will notify you of the sign-out.
+  /// the stream will notify user of the sign-out.
   ///
   /// (ja) このメソッドは、通常は直接呼び出さないでください。
   /// 代わりに、getTokenを利用してください。
