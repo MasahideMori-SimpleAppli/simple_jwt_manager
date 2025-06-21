@@ -30,11 +30,11 @@ class ROPCAuthStream {
     _ctrl.add(value);
   }
 
-  /// (en) Closes the stream for state change notifications.
+  /// (en) Closes the stream.
   /// There is no need to call this if there is only one this object in the entire app.
   /// Once this method is called, the object is no longer available.
   ///
-  /// (ja) 状態変化通知用のストリームを閉じます。
+  /// (ja) ストリームを閉じます。
   /// アプリ全体で１つだけこのオブジェクトを持っているような場合には呼び出しは不要です。
   /// このメソッドが呼び出されると、このオブジェクトは利用できなくなります。
   void dispose() {

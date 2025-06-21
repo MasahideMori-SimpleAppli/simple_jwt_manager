@@ -4,6 +4,8 @@
 * Fixed an issue where getToken was always null if refresh token was null.
 * The signOut method for ROPClient and ROPCClientForNative now requires a parameter.
 * The isSignedIn method of ROPCClient and ROPCClientForNative has been enhanced to take into account not only the presence or absence of a refresh token, but also the access token and its expiration time.
+* Fixed missing text in ROPCClientForNative.
+* Fixed an issue in ROPCClient and ROPCClientForNative where refreshAndGetNewToken() would not clear the token if refreshToken was missing.
 
 ## 0.0.29
 

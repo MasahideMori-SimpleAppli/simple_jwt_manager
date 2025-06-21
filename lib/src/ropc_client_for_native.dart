@@ -48,7 +48,6 @@ class ROPCClientForNative {
   // stream
   final ROPCAuthStream? stream;
 
-  // methods
   /// (en) This is an initialization function. All endpoints must support HTTPS.
   /// If you pass a URL that does not start with HTTPS,
   /// an exception will be thrown.
@@ -119,6 +118,8 @@ class ROPCClientForNative {
       } else {
         stream?.updateStream(EnumAuthStatus.signedOut);
       }
+    } else {
+      stream?.updateStream(EnumAuthStatus.unknown);
     }
   }
 
@@ -289,11 +290,14 @@ class ROPCClientForNative {
   /// so it must be implemented independently for each application.
   /// In the implementation of this package,
   /// information is POSTed in JSON to the deleteUserURL.
+  /// Any tokens being managed will also be cleared, and if there is a stream,
+  /// user will be notified of the sign-out.
   ///
   /// (ja) ユーザーの削除プロセスを実行します。
   /// このプロセスは OAuth2.0 では定義されていないため、
   /// アプリケーションごとに独自に実装する必要があります。
   /// 本ペッケージの実装ではdeleteUserURLに対してJSONで情報がPOSTされます。
+  /// 管理中のトークンなどもクリアされ、ストリームがあればサインアウトも通知されます。
   ///
   /// * [email] : User mail address. It is used as an ID(User name).
   /// According to the OAuth2.0 specification,
@@ -524,6 +528,8 @@ class ROPCClientForNative {
   /// but if that fails, null is returned.
   /// Also, null is returned if the user is not signed in.
   /// Debug builds only now display details when a token refresh fails.
+  /// If there is no refresh token or a signInRequired is returned from server,
+  /// the stream will notify you of the sign-out.
   ///
   /// (ja) JWTトークンを取得します。
   /// キャッシュされたトークンの期限が残っている場合、キャッシュされたトークンが返されます。
@@ -531,6 +537,8 @@ class ROPCClientForNative {
   /// 失敗した場合はnullを返します。
   /// また、サインイン状態では無い場合もnullが返されます。
   /// デバッグビルドでのみ、トークンのリフレッシュ失敗時に詳細が表示されます。
+  /// リフレッシュトークンが無いか、またはサーバーからsignInRequiredが返る場合、
+  /// ストリームでサインアウトが通知されます。
   Future<String?> getToken() async {
     if (_isTokenExpired()) {
       final ServerResponse res = await refreshAndGetNewToken();
@@ -551,9 +559,21 @@ class ROPCClientForNative {
         _accessTokenExpireUnixMS! - refreshMarginMs;
   }
 
-  /// リフレッシュトークンを使用して新しいトークンを取得し、キャッシュします。
+  /// (en) This method should not be called directly except when debugging.
+  /// Instead, use getToken.
+  /// This uses the refresh token to obtain a new token and caches it.
+  /// If there is no refresh token or a signInRequired is returned from server,
+  /// the stream will notify you of the sign-out.
+  ///
+  /// (ja) このメソッドは、通常は直接呼び出さないでください。
+  /// 代わりに、getTokenを利用してください。
+  /// これはリフレッシュトークンを使用して新しいトークンを取得し、キャッシュします。
+  /// リフレッシュトークンが無いか、またはサーバーからsignInRequiredが返る場合、
+  /// ストリームでサインアウトが通知されます。
   Future<ServerResponse> refreshAndGetNewToken() async {
     if (_refreshToken == null) {
+      // リフレッシュトークンが無い場合、クライアント側のトークンをクリアする
+      _clearToken();
       return UtilServerResponse.signInRequired();
     }
     final r = await UtilHttpsForNative.post(
