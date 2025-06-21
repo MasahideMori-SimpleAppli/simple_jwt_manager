@@ -608,8 +608,11 @@ class ROPCClient {
   }
 
   /// (en) Clear the local access and refresh tokens.
+  /// Any additional information such as scope and deadlines
+  /// will also be removed.
   ///
   /// (ja) ローカルのアクセストークン、及びリフレッシュトークンをクリアします。
+  /// スコープや期限などの付加情報についてもクリアされます。
   ///
   /// * [useStream] : If true, sign-out will be announced on Stream.
   void clearToken(bool useStream) {
