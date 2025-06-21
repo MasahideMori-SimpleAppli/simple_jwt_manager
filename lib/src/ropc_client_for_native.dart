@@ -162,7 +162,7 @@ class ROPCClientForNative {
   /// (ja) 状態変化通知用のストリームを閉じます。
   /// アプリ全体で１つだけこのオブジェクトを持っているような場合には呼び出しは不要です。
   /// このメソッドが呼び出されると、このオブジェクトは利用できなくなります。
-  void dispose() {
+  void disposeStream() {
     stream?.dispose();
   }
 
@@ -245,11 +245,13 @@ class ROPCClientForNative {
   /// * [name] : User name. This is personal information.
   /// * [nickname] : User Nickname.
   /// * [option] : Other optional parameters.
+  /// * [useStream] : If true, announced on Stream.
   Future<ServerResponse> register(String email, String password,
       {String? scope,
       String? name,
       String? nickname,
-      Map<String, dynamic>? option}) async {
+      Map<String, dynamic>? option,
+      bool useStream = true}) async {
     final r = await UtilHttpsForNative.post(
         _registerUrl,
         {
@@ -271,7 +273,7 @@ class ROPCClientForNative {
         try {
           // サーバーがトークンを返す仕様の場合は取得してログイン状態にする
           final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
-          _updateJWTBuff(tokens);
+          _updateJWTBuff(tokens, useStream: useStream);
           return r;
         } catch (e) {
           // サーバーがトークンを返さない、または戻り値がJSONでは無いような場合。
@@ -290,22 +292,20 @@ class ROPCClientForNative {
   /// so it must be implemented independently for each application.
   /// In the implementation of this package,
   /// information is POSTed in JSON to the deleteUserURL.
-  /// Any tokens being managed will also be cleared, and if there is a stream,
-  /// user will be notified of the sign-out.
   ///
   /// (ja) ユーザーの削除プロセスを実行します。
   /// このプロセスは OAuth2.0 では定義されていないため、
   /// アプリケーションごとに独自に実装する必要があります。
   /// 本ペッケージの実装ではdeleteUserURLに対してJSONで情報がPOSTされます。
-  /// 管理中のトークンなどもクリアされ、ストリームがあればサインアウトも通知されます。
   ///
   /// * [email] : User mail address. It is used as an ID(User name).
   /// According to the OAuth2.0 specification,
   /// this will be sent as the username.
   /// * [password] : pw.
   /// * [option] : Other optional parameters.
+  /// * [useStream] : If true, announced on Stream.
   Future<ServerResponse> deleteUser(String email, String password,
-      {Map<String, dynamic>? option}) async {
+      {Map<String, dynamic>? option, bool useStream = true}) async {
     final r = await UtilHttpsForNative.post(
         _deleteUserURL,
         {
@@ -321,7 +321,7 @@ class ROPCClientForNative {
         charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
-        _clearToken();
+        clearToken(useStream);
         return r;
       case EnumServerResponseStatus.timeout:
       case EnumServerResponseStatus.serverError:
@@ -333,7 +333,12 @@ class ROPCClientForNative {
 
   /// 取得したトークンなどの情報をこのクラスに上書き保存します。
   /// 各パラメータのうちnullが渡されたものはクリア（nullで上書き）されます。
-  void _updateJWTBuff(Map<String, dynamic> tokens) {
+  ///
+  /// * [tokens] : トークンデータが入った辞書。
+  /// * [useStream] : trueの時、ストリームが設定されている場合には通知を行います。
+  /// * [forceStreamSignedOut] : 強制的にサインアウトとして通知するかどうかの指定。
+  void _updateJWTBuff(Map<String, dynamic> tokens,
+      {required bool useStream, bool forceStreamSignedOut = false}) {
     EnumAuthStatus? streamUpdateValue;
     if (tokens.containsKey(FJsonKeysFromServer.accessToken)) {
       if (_accessToken == null &&
@@ -378,9 +383,15 @@ class ROPCClientForNative {
     if (updateJwtCallback != null) {
       updateJwtCallback!(toDict());
     }
-    // ストリームがあれば更新する。
-    if (streamUpdateValue != null) {
-      stream?.updateStream(streamUpdateValue);
+    if (useStream) {
+      // ストリームがあれば更新する。
+      if (forceStreamSignedOut) {
+        stream?.updateStream(EnumAuthStatus.signedOut);
+      } else {
+        if (streamUpdateValue != null) {
+          stream?.updateStream(streamUpdateValue);
+        }
+      }
     }
   }
 
@@ -396,8 +407,9 @@ class ROPCClientForNative {
   /// * [password] : pw.
   /// * [scope] : Application specific access permissions passed
   /// in space separated format, e.g. read write, user:follow, etc.
+  /// * [useStream] : If true, announced on Stream.
   Future<ServerResponse> signIn(String email, String password,
-      {String? scope}) async {
+      {String? scope, bool useStream = true}) async {
     final r = await UtilHttpsForNative.post(
         _signInUrl,
         {
@@ -416,7 +428,7 @@ class ROPCClientForNative {
       case EnumServerResponseStatus.success:
         // トークンを取得して保存
         final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
-        _updateJWTBuff(tokens);
+        _updateJWTBuff(tokens, useStream: useStream);
         // 必須パラメータの返却チェック
         if (_accessToken == null || _tokenType == null) {
           return UtilServerResponse.otherError(
@@ -445,11 +457,14 @@ class ROPCClientForNative {
   /// 途中で何らかのエラーが発生した場合は、単にエラーが返されます。
   /// エラー時にどのトークンの失効に失敗したのかを調べるには、
   /// クライアントの保持するトークンを確認してください。
-  Future<ServerResponse> signOutAllTokens() async {
-    ServerResponse res = await signOut(isRefreshToken: true);
+  ///
+  /// * [useStream] : If true, announced on Stream.
+  Future<ServerResponse> signOutAllTokens({bool useStream = true}) async {
+    ServerResponse res =
+        await signOut(isRefreshToken: true, useStream: useStream);
     switch (res.resultStatus) {
       case EnumServerResponseStatus.success:
-        return await signOut(isRefreshToken: false);
+        return await signOut(isRefreshToken: false, useStream: useStream);
       case EnumServerResponseStatus.timeout:
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.otherError:
@@ -480,7 +495,9 @@ class ROPCClientForNative {
   ///
   /// * [isRefreshToken] : If true, invalidates the server-side refresh token.
   /// If it is false, the access token will be invalidated.
-  Future<ServerResponse> signOut({required bool isRefreshToken}) async {
+  /// * [useStream] : If true, announced on Stream.
+  Future<ServerResponse> signOut(
+      {required bool isRefreshToken, bool useStream = true}) async {
     Map<String, dynamic> target = {};
     if (isRefreshToken) {
       target = {
@@ -503,14 +520,15 @@ class ROPCClientForNative {
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         if (isRefreshToken) {
-          _updateJWTBuff({FJsonKeysFromServer.refreshToken: null});
+          _updateJWTBuff({FJsonKeysFromServer.refreshToken: null},
+              useStream: useStream);
         } else {
           _updateJWTBuff({
             FJsonKeysFromServer.accessToken: null,
             FJsonKeysFromServer.expiresIn: null,
             FJsonKeysFromServer.scope: null,
             FJsonKeysFromServer.tokenType: null,
-          });
+          }, useStream: useStream);
         }
         return r;
       case EnumServerResponseStatus.timeout:
@@ -528,8 +546,7 @@ class ROPCClientForNative {
   /// but if that fails, null is returned.
   /// Also, null is returned if the user is not signed in.
   /// Debug builds only now display details when a token refresh fails.
-  /// If there is no refresh token or a signInRequired is returned from server,
-  /// the stream will notify user of the sign-out.
+  /// If this method returns null, you must call clearToken.
   ///
   /// (ja) JWTトークンを取得します。
   /// キャッシュされたトークンの期限が残っている場合、キャッシュされたトークンが返されます。
@@ -537,11 +554,14 @@ class ROPCClientForNative {
   /// 失敗した場合はnullを返します。
   /// また、サインイン状態では無い場合もnullが返されます。
   /// デバッグビルドでのみ、トークンのリフレッシュ失敗時に詳細が表示されます。
-  /// リフレッシュトークンが無いか、またはサーバーからsignInRequiredが返る場合、
-  /// ストリームでサインアウトが通知されます。
-  Future<String?> getToken() async {
+  /// このメソッドがnullを返す場合、clearTokenを呼び出してください。
+  ///
+  /// * [useStream] : If true, token refreshes will be announced in the stream.
+  /// Default is false.
+  Future<String?> getToken({bool useStream = false}) async {
     if (_isTokenExpired()) {
-      final ServerResponse res = await refreshAndGetNewToken();
+      final ServerResponse res =
+          await refreshAndGetNewToken(useStream: useStream);
       if (res.resultStatus != EnumServerResponseStatus.success) {
         if (kDebugMode) {
           debugPrint(res.errorDetail);
@@ -562,18 +582,19 @@ class ROPCClientForNative {
   /// (en) This method should not be called directly except when debugging.
   /// Instead, use getToken.
   /// This uses the refresh token to obtain a new token and caches it.
-  /// If there is no refresh token or a signInRequired is returned from server,
-  /// the stream will notify user of the sign-out.
+  /// If this method returns EnumServerResponseStatus.signInRequired,
+  /// you must call clearToken.
   ///
   /// (ja) このメソッドは、通常は直接呼び出さないでください。
   /// 代わりに、getTokenを利用してください。
   /// これはリフレッシュトークンを使用して新しいトークンを取得し、キャッシュします。
-  /// リフレッシュトークンが無いか、またはサーバーからsignInRequiredが返る場合、
-  /// ストリームでサインアウトが通知されます。
-  Future<ServerResponse> refreshAndGetNewToken() async {
+  /// このメソッドでEnumServerResponseStatus.signInRequiredが返された場合は、
+  /// clearTokenを呼び出してください。
+  ///
+  /// * [useStream] : If true, announced on Stream.
+  Future<ServerResponse> refreshAndGetNewToken(
+      {required bool useStream}) async {
     if (_refreshToken == null) {
-      // リフレッシュトークンが無い場合、クライアント側のトークンをクリアする
-      _clearToken();
       return UtilServerResponse.signInRequired();
     }
     final r = await UtilHttpsForNative.post(
@@ -593,7 +614,7 @@ class ROPCClientForNative {
         try {
           // トークンを取得して保存
           final Map<String, dynamic> tokens = jsonDecode(r.response!.body);
-          _updateJWTBuff(tokens);
+          _updateJWTBuff(tokens, useStream: useStream);
           // 必須パラメータの返却チェック
           if (_accessToken == null || _tokenType == null) {
             return UtilServerResponse.otherError(
@@ -604,8 +625,6 @@ class ROPCClientForNative {
           return UtilServerResponse.otherError('Invalid token format');
         }
       case EnumServerResponseStatus.signInRequired:
-        // リフレッシュトークンが期限切れの場合、クライアント側のトークンをクリアする
-        _clearToken();
         return UtilServerResponse.signInRequired(res: r.response);
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.timeout:
@@ -614,14 +633,18 @@ class ROPCClientForNative {
     }
   }
 
-  /// ローカルのアクセストークン、及びリフレッシュトークンをクリアします。
-  void _clearToken() {
+  /// (en) Clear the local access and refresh tokens.
+  ///
+  /// (ja) ローカルのアクセストークン、及びリフレッシュトークンをクリアします。
+  ///
+  /// * [useStream] : If true, sign-out will be announced on Stream.
+  void clearToken(bool useStream) {
     _updateJWTBuff({
       FJsonKeysFromServer.accessToken: null,
       FJsonKeysFromServer.expiresIn: null,
       FJsonKeysFromServer.scope: null,
       FJsonKeysFromServer.tokenType: null,
       FJsonKeysFromServer.refreshToken: null
-    });
+    }, useStream: useStream, forceStreamSignedOut: true);
   }
 }

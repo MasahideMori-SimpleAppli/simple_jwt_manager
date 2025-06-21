@@ -13,6 +13,9 @@ late final ROPCClient ropcClient; // web or native
 // late final ROPCClientForNative
 //     ropcClient; // native, use self-signed certificates
 
+// You can use this if you want to redirect with GoRouter.
+final ROPCAuthStream _stream = ROPCAuthStream();
+
 // TODO: Please make sure to rewrite this URL.
 const String registerURL = "https://your end point url";
 const String signInURL = "https://your end point url";
@@ -71,7 +74,8 @@ void main() async {
         // TODO
         // You can save the JWT on your device.
         // This is also called if the token is deleted.
-      });
+      },
+      stream: _stream);
 
   // For native device only.
   // This version can support self-signed certificates.
@@ -92,7 +96,8 @@ void main() async {
   //       // TODO
   //       // You can save the JWT on your device.
   //       // This is also called if the token is deleted.
-  //     });
+  //     },
+  //     stream: _stream);
 
   runApp(const MyApp());
 }
@@ -231,9 +236,8 @@ class _MyAppState extends State<MyApp> {
                               // TODO: Handle other error case.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // TODO: Handle other error case.
-                              // The refresh token has expired.
-                              break;
+                              // That doesn't usually happen here.
+                              throw Exception();
                           }
                         });
                       },
@@ -274,7 +278,7 @@ class _MyAppState extends State<MyApp> {
                     child: ElevatedButton(
                       onPressed: () {
                         ropcClient
-                            .refreshAndGetNewToken()
+                            .refreshAndGetNewToken(useStream: false)
                             .then((ServerResponse v) {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
@@ -293,6 +297,8 @@ class _MyAppState extends State<MyApp> {
                             case EnumServerResponseStatus.signInRequired:
                               // TODO:
                               debugPrint("SignIn required");
+                              // goto signIn page.
+                              ropcClient.clearToken(true);
                               break;
                           }
                         });
@@ -352,13 +358,15 @@ class _MyAppState extends State<MyApp> {
                               break;
                             case EnumServerResponseStatus.signInRequired:
                               // TODO The token has expired or was not obtained,
-                              //  so please go to the sign-in screen.
+                              // goto signIn page.
+                              ropcClient.clearToken(true);
                               break;
                           }
                         } else {
                           // TODO The token has expired or was not obtained,
-                          //  so please go to the sign-in screen.
                           debugPrint("The token is null.");
+                          // goto signIn page.
+                          ropcClient.clearToken(true);
                         }
                       },
                       child: const Text('Post data to EndPoints'),
