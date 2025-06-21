@@ -9,5 +9,7 @@ export 'src/server_response/server_response.dart';
 export 'src/server_response/util_server_response.dart';
 export 'src/ropc_client_stub.dart'
     if (dart.library.js_interop) 'src/ropc_client_web.dart';
+export 'src/stream/enum_auth_status.dart';
+export 'src/stream/ropc_auth_stream.dart';
 export 'src/tools/error_reporter_stub.dart'
     if (dart.library.js_interop) 'src/tools/error_reporter_web.dart';

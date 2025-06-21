@@ -1,6 +1,6 @@
 name: simple_jwt_manager
 description: "This is a package that supports authentication using the ROPC defined in RFC 6749."
-version: 0.0.29
+version: 0.0.30
 repository: https://github.com/MasahideMori-SimpleAppli/simple_jwt_manager
 
 environment:

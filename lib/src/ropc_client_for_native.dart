@@ -22,7 +22,7 @@ import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart'
 class ROPCClientForNative {
   // static parameters
   static const String className = "ROPCClientForNative";
-  static const int version = 6;
+  static const int version = 7;
 
   // parameters
   late final String _registerUrl;
@@ -44,6 +44,9 @@ class ROPCClientForNative {
   int? _accessTokenExpireUnixMS;
   String? _scope;
   String? _tokenType;
+
+  // stream
+  final ROPCAuthStream? stream;
 
   // methods
   /// (en) This is an initialization function. All endpoints must support HTTPS.
@@ -77,6 +80,8 @@ class ROPCClientForNative {
   /// The result of the toDict call on this class is passed as an argument to
   /// the function, and can be saved to compose the savedData used on app restart
   /// that will be passed on app restart.
+  /// * [stream] : If you want to manage sign-in with Stream,
+  /// you can specify this to integrate.
   ROPCClientForNative(
       {required String registerURL,
       required String signInURL,
@@ -90,7 +95,8 @@ class ROPCClientForNative {
           badCertificateCallback,
       Map<String, dynamic>? savedData,
       this.refreshMarginMs = 30 * 1000,
-      this.updateJwtCallback}) {
+      this.updateJwtCallback,
+      this.stream}) {
     _registerUrl = UtilCheckURL.validateHttpsUrl(registerURL);
     _signInUrl = UtilCheckURL.validateHttpsUrl(signInURL);
     _refreshUrl = UtilCheckURL.validateHttpsUrl(refreshURL);
@@ -101,10 +107,18 @@ class ROPCClientForNative {
     _responseTimeout = responseTimeout ?? const Duration(minutes: 1);
     if (savedData != null) {
       _accessToken = savedData["access_token"];
+      // 注：ここでは、UNIXTimeに変換された時間が入っているため_updateJWTBuffは使えない。
       _accessTokenExpireUnixMS = savedData["access_token_expire_unix_ms"];
       _scope = savedData["scope"];
       _tokenType = savedData["token_type"];
       _refreshToken = savedData["refresh_token"];
+      if (_accessToken != null && !_isTokenExpired()) {
+        stream?.updateStream(EnumAuthStatus.signedIn);
+      } else if (_refreshToken != null) {
+        stream?.updateStream(EnumAuthStatus.signedIn);
+      } else {
+        stream?.updateStream(EnumAuthStatus.signedOut);
+      }
     }
   }
 
@@ -129,13 +143,39 @@ class ROPCClientForNative {
     };
   }
 
+  /// (en) Gets the stream for sign-in status change notifications.
+  /// This will return whatever was set in the initializer.
+  /// Returns null if not set.
+  ///
+  /// (ja) サインインの状態変化通知用のストリームを取得します。
+  /// これは、イニシャライザで設定されたものが返されます。
+  /// 設定されていなければnullを返します。
+  ROPCAuthStream? getStream() {
+    return stream;
+  }
+
+  /// (en) Closes the stream for state change notifications.
+  /// There is no need to call this if there is only one this object in the entire app.
+  /// Once this method is called, the object is no longer available.
+  ///
+  /// (ja) 状態変化通知用のストリームを閉じます。
+  /// アプリ全体で１つだけこのオブジェクトを持っているような場合には呼び出しは不要です。
+  /// このメソッドが呼び出されると、このオブジェクトは利用できなくなります。
+  void dispose() {
+    stream?.dispose();
+  }
+
   /// (en) Returns whether the user is currently signed in.
-  /// This is determined by whether a refresh token is present.
   ///
   /// (ja) 現在サインイン状態かどうかを返します。
-  /// 判定はリフレッシュトークンの有無で判断されます。
   bool isSignedIn() {
-    return _refreshToken != null;
+    if (_accessToken != null && !_isTokenExpired()) {
+      return true;
+    } else if (_refreshToken != null) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /// (en) Returns the refresh token.
@@ -287,18 +327,32 @@ class ROPCClientForNative {
     }
   }
 
-  /// 取得したトークンなどの情報をこのクラスに保存します。
+  /// 取得したトークンなどの情報をこのクラスに上書き保存します。
+  /// 各パラメータのうちnullが渡されたものはクリア（nullで上書き）されます。
   void _updateJWTBuff(Map<String, dynamic> tokens) {
-    final int nowUnixTimeMS = DateTime.now().millisecondsSinceEpoch;
+    EnumAuthStatus? streamUpdateValue;
     if (tokens.containsKey(FJsonKeysFromServer.accessToken)) {
+      if (_accessToken == null &&
+          tokens[FJsonKeysFromServer.accessToken] != null) {
+        streamUpdateValue = EnumAuthStatus.signedIn;
+      } else if (_accessToken != null &&
+          tokens[FJsonKeysFromServer.accessToken] == null) {
+        streamUpdateValue = EnumAuthStatus.signedOut;
+      }
       _accessToken = tokens[FJsonKeysFromServer.accessToken];
       _accessTokenExpireUnixMS = null;
       _scope = null;
       _tokenType = null;
     }
     if (tokens.containsKey(FJsonKeysFromServer.expiresIn)) {
-      _accessTokenExpireUnixMS = nowUnixTimeMS +
-          (int.parse(tokens[FJsonKeysFromServer.expiresIn].toString()) * 1000);
+      if (tokens[FJsonKeysFromServer.expiresIn] == null) {
+        _accessTokenExpireUnixMS = null;
+      } else {
+        final int nowUnixTimeMS = DateTime.now().millisecondsSinceEpoch;
+        _accessTokenExpireUnixMS = nowUnixTimeMS +
+            (int.parse(tokens[FJsonKeysFromServer.expiresIn].toString()) *
+                1000);
+      }
     }
     if (tokens.containsKey(FJsonKeysFromServer.scope)) {
       _scope = tokens[FJsonKeysFromServer.scope];
@@ -307,11 +361,22 @@ class ROPCClientForNative {
       _tokenType = tokens[FJsonKeysFromServer.tokenType];
     }
     if (tokens.containsKey(FJsonKeysFromServer.refreshToken)) {
+      if (_refreshToken == null &&
+          tokens[FJsonKeysFromServer.refreshToken] != null) {
+        streamUpdateValue = EnumAuthStatus.signedIn;
+      } else if (_refreshToken != null &&
+          tokens[FJsonKeysFromServer.refreshToken] == null) {
+        streamUpdateValue = EnumAuthStatus.signedOut;
+      }
       _refreshToken = tokens[FJsonKeysFromServer.refreshToken];
     }
-    // コールバックがあれば起動する
+    // コールバックがあれば起動する。
     if (updateJwtCallback != null) {
       updateJwtCallback!(toDict());
+    }
+    // ストリームがあれば更新する。
+    if (streamUpdateValue != null) {
+      stream?.updateStream(streamUpdateValue);
     }
   }
 
@@ -411,7 +476,7 @@ class ROPCClientForNative {
   ///
   /// * [isRefreshToken] : If true, invalidates the server-side refresh token.
   /// If it is false, the access token will be invalidated.
-  Future<ServerResponse> signOut({bool isRefreshToken = true}) async {
+  Future<ServerResponse> signOut({required bool isRefreshToken}) async {
     Map<String, dynamic> target = {};
     if (isRefreshToken) {
       target = {
@@ -434,16 +499,14 @@ class ROPCClientForNative {
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         if (isRefreshToken) {
-          _refreshToken = null;
+          _updateJWTBuff({FJsonKeysFromServer.refreshToken: null});
         } else {
-          _accessToken = null;
-          _accessTokenExpireUnixMS = null;
-          _scope = null;
-          _tokenType = null;
-        }
-        // コールバックがあれば起動する
-        if (updateJwtCallback != null) {
-          updateJwtCallback!(toDict());
+          _updateJWTBuff({
+            FJsonKeysFromServer.accessToken: null,
+            FJsonKeysFromServer.expiresIn: null,
+            FJsonKeysFromServer.scope: null,
+            FJsonKeysFromServer.tokenType: null,
+          });
         }
         return r;
       case EnumServerResponseStatus.timeout:
@@ -469,9 +532,6 @@ class ROPCClientForNative {
   /// また、サインイン状態では無い場合もnullが返されます。
   /// デバッグビルドでのみ、トークンのリフレッシュ失敗時に詳細が表示されます。
   Future<String?> getToken() async {
-    if (_refreshToken == null) {
-      return null;
-    }
     if (_isTokenExpired()) {
       final ServerResponse res = await refreshAndGetNewToken();
       if (res.resultStatus != EnumServerResponseStatus.success) {
@@ -536,14 +596,12 @@ class ROPCClientForNative {
 
   /// ローカルのアクセストークン、及びリフレッシュトークンをクリアします。
   void _clearToken() {
-    _accessToken = null;
-    _accessTokenExpireUnixMS = null;
-    _scope = null;
-    _tokenType = null;
-    _refreshToken = null;
-    // コールバックがあれば起動する
-    if (updateJwtCallback != null) {
-      updateJwtCallback!(toDict());
-    }
+    _updateJWTBuff({
+      FJsonKeysFromServer.accessToken: null,
+      FJsonKeysFromServer.expiresIn: null,
+      FJsonKeysFromServer.scope: null,
+      FJsonKeysFromServer.tokenType: null,
+      FJsonKeysFromServer.refreshToken: null
+    });
   }
 }

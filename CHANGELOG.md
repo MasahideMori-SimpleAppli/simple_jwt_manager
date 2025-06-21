@@ -1,3 +1,10 @@
+## 0.0.30
+
+* Added ROPCAuthStream and EnumAuthStatus class. By setting stream on an ROPCClient or ROPCClientForNative, user can now use stream management.
+* Fixed an issue where getToken was always null if refresh token was null.
+* The signOut method for ROPClient and ROPCClientForNative now requires a parameter.
+* The isSignedIn method of ROPCClient and ROPCClientForNative has been enhanced to take into account not only the presence or absence of a refresh token, but also the access token and its expiration time.
+
 ## 0.0.29
 
 * The reportError method of the ErrorReporter and ErrorReporterForNative classes no longer throws an error in any case.
