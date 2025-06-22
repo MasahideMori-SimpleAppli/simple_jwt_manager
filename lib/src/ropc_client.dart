@@ -67,8 +67,6 @@ class ROPCClient {
   /// The result of the toDict call on this class is passed as an argument to
   /// the function, and can be saved to compose the savedData used on app restart
   /// that will be passed on app restart.
-  /// * [stream] : If you want to manage sign-in with Stream,
-  /// you can specify this to integrate.
   ROPCClient(
       {required String registerURL,
       required String signInURL,
