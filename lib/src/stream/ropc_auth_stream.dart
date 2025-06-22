@@ -12,12 +12,8 @@ class ROPCAuthStream {
   }
 
   /// (en) Gets a stream.
-  /// Note: If you don't want to get duplicate values,
-  /// use stream.distinct().listen on the retrieved stream.
   ///
   /// (ja) ストリームを取得します。
-  /// 注: もし重複する値を取得したくない場合は、取得したストリームに対して
-  /// stream.distinct().listenを使用してください。
   Stream<EnumAuthStatus> getStream() {
     return _ctrl.stream;
   }

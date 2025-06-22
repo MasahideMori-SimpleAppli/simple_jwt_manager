@@ -1,3 +1,8 @@
+## 0.0.32
+
+* The example has been updated.
+* Removed some unnecessary text about streams.
+
 ## 0.0.31
 
 * The automatic stream management introduced in version 0.0.30 has been canceled because it was less effective than expected.

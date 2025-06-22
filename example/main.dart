@@ -98,7 +98,7 @@ void main() async {
   //     });
 
   // TODO stream value test. In practice, it is used in conjunction with GoRouter.
-  authStream.getStream().distinct().listen((EnumAuthStatus status) {
+  authStream.getStream().listen((EnumAuthStatus status) {
     debugPrint("AuthStatusStream:${status.name}");
   });
 
