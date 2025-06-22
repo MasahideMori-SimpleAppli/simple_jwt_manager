@@ -1,3 +1,11 @@
+## 0.0.31
+
+* The automatic stream management introduced in version 0.0.30 has been canceled because it was less effective than expected.
+* From this version onwards, the stream-related classes will be kept, but they will be removed from the arguments of ROPCClient and ROPCClientForNative, and will now be updated manually from the ServerResponse value.
+* An updateStream function has been added to ROPClient and ROPCClientForNative that determines the sign-in state and updates the stream.
+* The clearToken method has been made private again. The clearToken method call is now managed automatically and there is no need to call it manually.
+* The example has been updated.
+
 ## 0.0.30
 
 * Added ROPCAuthStream and EnumAuthStatus class. By setting stream on an ROPCClient or ROPCClientForNative, user can now use stream management.

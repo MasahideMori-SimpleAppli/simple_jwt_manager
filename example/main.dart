@@ -14,7 +14,7 @@ late final ROPCClient ropcClient; // web or native
 //     ropcClient; // native, use self-signed certificates
 
 // You can use this if you want to redirect with GoRouter.
-final ROPCAuthStream _stream = ROPCAuthStream();
+final ROPCAuthStream authStream = ROPCAuthStream();
 
 // TODO: Please make sure to rewrite this URL.
 const String registerURL = "https://your end point url";
@@ -74,8 +74,7 @@ void main() async {
         // TODO
         // You can save the JWT on your device.
         // This is also called if the token is deleted.
-      },
-      stream: _stream);
+      });
 
   // For native device only.
   // This version can support self-signed certificates.
@@ -96,8 +95,12 @@ void main() async {
   //       // TODO
   //       // You can save the JWT on your device.
   //       // This is also called if the token is deleted.
-  //     },
-  //     stream: _stream);
+  //     });
+
+  // TODO stream value test. In practice, it is used in conjunction with GoRouter.
+  authStream.getStream().distinct().listen((EnumAuthStatus status) {
+    debugPrint("AuthStatusStream:${status.name}");
+  });
 
   runApp(const MyApp());
 }
@@ -197,6 +200,8 @@ class _MyAppState extends State<MyApp> {
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
                               // TODO Please add a process for when user registration is complete.
+                              // If you are working with streams, do the following:
+                              ropcClient.updateStream(authStream);
                               break;
                             case EnumServerResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
@@ -225,6 +230,8 @@ class _MyAppState extends State<MyApp> {
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
                               // signOut completed.
+                              // If you are working with streams, do the following:
+                              ropcClient.updateStream(authStream);
                               break;
                             case EnumServerResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
@@ -254,6 +261,8 @@ class _MyAppState extends State<MyApp> {
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
                               // delete user completed.
+                              // If you are working with streams, do the following:
+                              ropcClient.updateStream(authStream);
                               break;
                             case EnumServerResponseStatus.timeout:
                               // TODO: What happens when a timeout occurs.
@@ -278,7 +287,7 @@ class _MyAppState extends State<MyApp> {
                     child: ElevatedButton(
                       onPressed: () {
                         ropcClient
-                            .refreshAndGetNewToken(useStream: false)
+                            .refreshAndGetNewToken()
                             .then((ServerResponse v) {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
@@ -298,7 +307,8 @@ class _MyAppState extends State<MyApp> {
                               // TODO:
                               debugPrint("SignIn required");
                               // goto signIn page.
-                              ropcClient.clearToken(true);
+                              // If you are working with streams, do the following:
+                              ropcClient.updateStream(authStream);
                               break;
                           }
                         });
@@ -359,14 +369,16 @@ class _MyAppState extends State<MyApp> {
                             case EnumServerResponseStatus.signInRequired:
                               // TODO The token has expired or was not obtained,
                               // goto signIn page.
-                              ropcClient.clearToken(true);
+                              // If you are working with streams, do the following:
+                              ropcClient.updateStream(authStream);
                               break;
                           }
                         } else {
                           // TODO The token has expired or was not obtained,
                           debugPrint("The token is null.");
                           // goto signIn page.
-                          ropcClient.clearToken(true);
+                          // If you are working with streams, do the following:
+                          ropcClient.updateStream(authStream);
                         }
                       },
                       child: const Text('Post data to EndPoints'),
