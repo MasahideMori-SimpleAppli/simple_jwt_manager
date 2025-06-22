@@ -498,6 +498,7 @@ class ROPCClient {
   /// これはリフレッシュトークンを使用して新しいトークンを取得し、キャッシュします。
   Future<ServerResponse> refreshAndGetNewToken() async {
     if (_refreshToken == null) {
+      _clearToken();
       return UtilServerResponse.signInRequired();
     }
     final r = await UtilHttps.post(
@@ -526,6 +527,7 @@ class ROPCClient {
           return UtilServerResponse.otherError('Invalid token format');
         }
       case EnumServerResponseStatus.signInRequired:
+        _clearToken();
         return UtilServerResponse.signInRequired(res: r.response);
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.timeout:
