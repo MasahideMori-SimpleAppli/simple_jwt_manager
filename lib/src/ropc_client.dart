@@ -132,10 +132,10 @@ class ROPCClient {
     } else if (_refreshToken != null) {
       stream.updateStream(EnumAuthStatus.signedIn);
     } else {
-      stream.updateStream(EnumAuthStatus.signedOut);
       if (forceSignOut) {
         clearToken();
       }
+      stream.updateStream(EnumAuthStatus.signedOut);
     }
   }
 
