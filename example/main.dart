@@ -225,7 +225,7 @@ class _MyAppState extends State<MyApp> {
                     margin: const EdgeInsets.fromLTRB(0, 12, 0, 0),
                     child: ElevatedButton(
                       onPressed: () {
-                        ropcClient.signOutAllTokens().then((ServerResponse v) {
+                        ropcClient.signOut().then((ServerResponse v) {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:

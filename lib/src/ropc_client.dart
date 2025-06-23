@@ -120,13 +120,22 @@ class ROPCClient {
   /// (ja) サインイン状態を判別して現在の状態をストリームに通知します。
   ///
   /// * [stream] : The auth stream.
-  void updateStream(ROPCAuthStream stream) {
+  /// * [forceSignOut] : If the status is signed out, the token cache managed
+  /// by this class will be discarded.
+  /// If this is true, the access token managed by the app will be discarded
+  /// when this method is called, even if, for example, only the refresh token
+  /// has been expired. However, the access token on the server side will not
+  /// expire.
+  void updateStream(ROPCAuthStream stream, {bool forceSignOut = false}) {
     if (_accessToken != null && !_isTokenExpired()) {
       stream.updateStream(EnumAuthStatus.signedIn);
     } else if (_refreshToken != null) {
       stream.updateStream(EnumAuthStatus.signedIn);
     } else {
       stream.updateStream(EnumAuthStatus.signedOut);
+      if (forceSignOut) {
+        clearToken();
+      }
     }
   }
 
@@ -278,7 +287,7 @@ class ROPCClient {
         charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
-        _clearToken();
+        clearToken();
         return r;
       case EnumServerResponseStatus.timeout:
       case EnumServerResponseStatus.serverError:
@@ -370,8 +379,7 @@ class ROPCClient {
   }
 
   /// (en) Performs sign-out processing as specified in RFC 7009.
-  /// This is a simplified version
-  /// that invalidates the refresh token and access token in succession.
+  /// This will revoke the refresh token and the access token consecutively.
   /// If an error occurs along the way,
   /// an error status will simply be returned,
   /// which may make it difficult to understand the situation.
@@ -379,15 +387,15 @@ class ROPCClient {
   /// check the tokens held by the client.
   ///
   /// (ja) RFC 7009の仕様の通り、サインアウト処理を行います。
-  /// これは簡易版で、リフレッシュトークンとアクセストークンを連続で失効処理します。
+  /// これは、リフレッシュトークンとアクセストークンを連続で失効処理します。
   /// 途中で何らかのエラーが発生した場合は、単にエラーステータスが返されます。
   /// エラー時にどのトークンの失効に失敗したのかを調べるには、
   /// クライアントの保持するトークンを確認してください。
-  Future<ServerResponse> signOutAllTokens() async {
-    ServerResponse res = await signOut(isRefreshToken: true);
+  Future<ServerResponse> signOut() async {
+    ServerResponse res = await revokeRefreshToken();
     switch (res.resultStatus) {
       case EnumServerResponseStatus.success:
-        return await signOut(isRefreshToken: false);
+        return await revokeAccessToken();
       case EnumServerResponseStatus.timeout:
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.otherError:
@@ -396,56 +404,48 @@ class ROPCClient {
     }
   }
 
-  /// (en) Performs sign-out processing in accordance with
-  /// the RFC 7009 specifications.
-  /// Normally, a two-step process is required:
-  /// first send a request to invalidate
-  /// the refresh token (isRefreshToken = true),
-  /// then send a request to invalidate
-  /// the access token (isRefreshToken = false).
-  /// If you want strict control,
-  /// process in two steps while changing the arguments of this function.
-  /// You can use signOutAllTokens for a simple implementation,
-  /// but signOutAllTokens cannot handle individual errors.
+  /// (en) Performs access token sign-out processing as specified in RFC 7009.
   ///
-  /// (ja) RFC 7009の仕様の通り、サインアウト処理を行います。
-  /// 通常は、まずリフレッシュトークンの無効化リクエストを送信（isRefreshToken = true）し、
-  /// 続けてアクセストークンの無効化リクエストを送信(isRefreshToken = false)
-  /// する２段階の処理が必要です。
-  /// 厳密に制御したい場合はこの関数の引数を変更しつつ２段階で処理してください。
-  /// 簡易に実装したい場合はsignOutAllTokensを利用できますが、
-  /// signOutAllTokensは個別のエラーには対応できません。
-  ///
-  /// * [isRefreshToken] : If true, invalidates the server-side refresh token.
-  /// If it is false, the access token will be invalidated.
-  Future<ServerResponse> signOut({required bool isRefreshToken}) async {
-    Map<String, dynamic> target = {};
-    if (isRefreshToken) {
-      target = {
-        FJsonKeysToServer.tokenTypeHint: FJsonKeysToServer.refreshToken,
-        FJsonKeysToServer.refreshToken: _refreshToken,
-      };
-    } else {
-      target = {
-        FJsonKeysToServer.tokenTypeHint: FJsonKeysToServer.accessToken,
-        FJsonKeysToServer.accessToken: _accessToken,
-      };
-    }
+  /// (ja) RFC 7009の仕様の通り、アクセストークンのサインアウト処理を行います。
+  Future<ServerResponse> revokeAccessToken() async {
+    Map<String, dynamic> target = {
+      FJsonKeysToServer.tokenTypeHint: FJsonKeysToServer.accessToken,
+      FJsonKeysToServer.accessToken: _accessToken,
+    };
     final r = await UtilHttps.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
         timeout: _timeout, adjustTiming: false, charset: charset);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
-        if (isRefreshToken) {
-          _updateJWTBuff({FJsonKeysFromServer.refreshToken: null});
-        } else {
-          _updateJWTBuff({
-            FJsonKeysFromServer.accessToken: null,
-            FJsonKeysFromServer.expiresIn: null,
-            FJsonKeysFromServer.scope: null,
-            FJsonKeysFromServer.tokenType: null,
-          });
-        }
+        _updateJWTBuff({
+          FJsonKeysFromServer.accessToken: null,
+          FJsonKeysFromServer.expiresIn: null,
+          FJsonKeysFromServer.scope: null,
+          FJsonKeysFromServer.tokenType: null,
+        });
+        return r;
+      case EnumServerResponseStatus.timeout:
+      case EnumServerResponseStatus.serverError:
+      case EnumServerResponseStatus.otherError:
+      case EnumServerResponseStatus.signInRequired:
+        return r;
+    }
+  }
+
+  /// (en) Performs refresh token sign-out processing as specified in RFC 7009.
+  ///
+  /// (ja) RFC 7009の仕様の通り、リフレッシュトークンのサインアウト処理を行います。
+  Future<ServerResponse> revokeRefreshToken() async {
+    Map<String, dynamic> target = {
+      FJsonKeysToServer.tokenTypeHint: FJsonKeysToServer.refreshToken,
+      FJsonKeysToServer.refreshToken: _refreshToken,
+    };
+    final r = await UtilHttps.post(
+        _revokeURL, target, EnumPostEncodeType.urlEncoded,
+        timeout: _timeout, adjustTiming: false, charset: charset);
+    switch (r.resultStatus) {
+      case EnumServerResponseStatus.success:
+        _updateJWTBuff({FJsonKeysFromServer.refreshToken: null});
         return r;
       case EnumServerResponseStatus.timeout:
       case EnumServerResponseStatus.serverError:
@@ -498,7 +498,7 @@ class ROPCClient {
   /// これはリフレッシュトークンを使用して新しいトークンを取得し、キャッシュします。
   Future<ServerResponse> refreshAndGetNewToken() async {
     if (_refreshToken == null) {
-      _clearToken();
+      clearToken();
       return UtilServerResponse.signInRequired();
     }
     final r = await UtilHttps.post(
@@ -527,7 +527,7 @@ class ROPCClient {
           return UtilServerResponse.otherError('Invalid token format');
         }
       case EnumServerResponseStatus.signInRequired:
-        _clearToken();
+        clearToken();
         return UtilServerResponse.signInRequired(res: r.response);
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.timeout:
@@ -536,13 +536,13 @@ class ROPCClient {
     }
   }
 
-  /// (en) Clear the local access and refresh tokens.
+  /// (en) Clears the access token and refresh token managed by this class.
   /// Any additional information such as scope and deadlines
   /// will also be removed.
   ///
-  /// (ja) ローカルのアクセストークン、及びリフレッシュトークンをクリアします。
+  /// (ja) このクラスで管理しているアクセストークン、及びリフレッシュトークンをクリアします。
   /// スコープや期限などの付加情報についてもクリアされます。
-  void _clearToken() {
+  void clearToken() {
     _updateJWTBuff({
       FJsonKeysFromServer.accessToken: null,
       FJsonKeysFromServer.expiresIn: null,

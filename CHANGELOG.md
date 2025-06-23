@@ -1,3 +1,10 @@
+## 0.0.33
+
+* To make the sign-out process for ROPCClient and ROPCClientForNative clearer, signOutAllTokens has been removed and signOut now has the same effect. The old signOut methods are now implemented as revokeAccessToken and revokeRefreshToken.
+* The updateStream method for ROPCClient and ROPCClientForNative has a forceSignOut option added.
+* The clearToken method for ROPCClient and ROPCClientForNative has been made public again for programmatic flexibility.
+* The example has been updated.
+
 ## 0.0.32
 
 * The example has been updated.
