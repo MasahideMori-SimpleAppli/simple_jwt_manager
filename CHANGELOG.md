@@ -1,6 +1,6 @@
 ## 0.0.34
 
-* The ErrorReporter has been improved so that if a user tries to use it before init has been run, a dedicated message will be printed in debugPrint.
+* ErrorReporter and ErrorReporterForNative have been improved so that if the user tries to use it before init has been run, a special message will be printed to debugPrint.
 
 ## 0.0.33
 
