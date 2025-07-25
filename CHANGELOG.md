@@ -1,3 +1,7 @@
+## 0.0.34
+
+* The ErrorReporter has been improved so that if a user tries to use it before init has been run, a dedicated message will be printed in debugPrint.
+
 ## 0.0.33
 
 * To make the sign-out process for ROPCClient and ROPCClientForNative clearer, signOutAllTokens has been removed and signOut now has the same effect. The old signOut methods are now implemented as revokeAccessToken and revokeRefreshToken.

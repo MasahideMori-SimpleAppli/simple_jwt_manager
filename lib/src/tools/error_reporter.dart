@@ -15,8 +15,8 @@ class ErrorReporter {
 
   ErrorReporter._internal();
 
-  late String _endpointUrl;
-  late String _appVersion;
+  String? _endpointUrl;
+  String? _appVersion;
   Map<String, dynamic>? _extraInfo;
 
   Duration _rateLimitWindow = Duration(seconds: 60);
@@ -31,6 +31,8 @@ class ErrorReporter {
 
   // Flag to allow reporting.
   bool allowReporting = true;
+
+  bool _isInitialized = false;
 
   /// (en)　Initialize this class. Run this after calling
   /// WidgetsFlutterBinding.ensureInitialized(); in main.dart.
@@ -155,6 +157,7 @@ class ErrorReporter {
         }
       }
     };
+    _isInitialized = true;
   }
 
   /// (en) Sends the error content to the backend.
@@ -214,6 +217,11 @@ class ErrorReporter {
         return;
       }
 
+      if (!_isInitialized) {
+        debugPrint('[ErrorReporter] Requires running init.');
+        return;
+      }
+
       // エラーレポートが無限ループなどにならないように、
       // 指定時間中の送信上限を超えたら無視する設定。
       final now = DateTime.now();
@@ -253,7 +261,7 @@ class ErrorReporter {
 
       // 送信データを設定。
       final Map<String, dynamic> reportData = ErrorReportObj(
-              _appVersion,
+              _appVersion!,
               error.toString(),
               stackTrace?.toString(),
               now.toIso8601String(),
@@ -264,7 +272,7 @@ class ErrorReporter {
       // バックエンドに送信。
       try {
         final response = await UtilHttps.post(
-            _endpointUrl, reportData, EnumPostEncodeType.json,
+            _endpointUrl!, reportData, EnumPostEncodeType.json,
             jwt: jwt,
             timeout: timeout,
             adjustTiming: adjustTiming,
