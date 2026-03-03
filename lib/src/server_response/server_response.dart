@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
-
-import 'enum_server_response_status.dart';
+import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 
 /// (en) This class is used to store return values from the server.
 /// It stores statuses categorized in an easy to use way.

@@ -293,7 +293,7 @@ class ErrorReporterForNative {
 
       // バックエンドに送信。
       try {
-        final response = await UtilHttpsForNative.post(
+        final response = await HttpsServiceForNative.post(
             _endpointUrl!, reportData, EnumPostEncodeType.json,
             jwt: jwt,
             badCertificateCallback: badCertificateCallback,

@@ -237,7 +237,7 @@ class ROPCClientForNative {
       String? name,
       String? nickname,
       Map<String, dynamic>? option}) async {
-    final r = await UtilHttpsForNative.post(
+    final r = await HttpsServiceForNative.post(
         _registerUrl,
         {
           FJsonKeysToServer.username: email,
@@ -290,7 +290,7 @@ class ROPCClientForNative {
   /// * [option] : Other optional parameters.
   Future<ServerResponse> deleteUser(String email, String password,
       {Map<String, dynamic>? option}) async {
-    final r = await UtilHttpsForNative.post(
+    final r = await HttpsServiceForNative.post(
         _deleteUserURL,
         {
           FJsonKeysToServer.username: email,
@@ -365,7 +365,7 @@ class ROPCClientForNative {
   /// in space separated format, e.g. read write, user:follow, etc.
   Future<ServerResponse> signIn(String email, String password,
       {String? scope}) async {
-    final r = await UtilHttpsForNative.post(
+    final r = await HttpsServiceForNative.post(
         _signInUrl,
         {
           FJsonKeysToServer.grantType: FGrantType.password,
@@ -432,7 +432,7 @@ class ROPCClientForNative {
       FJsonKeysToServer.tokenTypeHint: FJsonKeysToServer.accessToken,
       FJsonKeysToServer.accessToken: _accessToken,
     };
-    final r = await UtilHttpsForNative.post(
+    final r = await HttpsServiceForNative.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
         badCertificateCallback: _badCertificateCallback,
         connectionTimeout: _connectionTimeout,
@@ -464,7 +464,7 @@ class ROPCClientForNative {
       FJsonKeysToServer.tokenTypeHint: FJsonKeysToServer.refreshToken,
       FJsonKeysToServer.refreshToken: _refreshToken,
     };
-    final r = await UtilHttpsForNative.post(
+    final r = await HttpsServiceForNative.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
         badCertificateCallback: _badCertificateCallback,
         connectionTimeout: _connectionTimeout,
@@ -529,7 +529,7 @@ class ROPCClientForNative {
       clearToken();
       return UtilServerResponse.signInRequired();
     }
-    final r = await UtilHttpsForNative.post(
+    final r = await HttpsServiceForNative.post(
         _refreshUrl,
         {
           FJsonKeysToServer.grantType: FGrantType.refreshToken,

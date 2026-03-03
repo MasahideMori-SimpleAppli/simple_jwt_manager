@@ -325,7 +325,7 @@ class _MyAppState extends State<MyApp> {
                           // TODO Add your implementation to do some operation in the backend.
 
                           // For web or native device.
-                          final ServerResponse res = await UtilHttps.post(
+                          final ServerResponse res = await HttpsService.post(
                               postingDataURL,
                               {"test": "test params"},
                               EnumPostEncodeType.json,
@@ -334,7 +334,7 @@ class _MyAppState extends State<MyApp> {
                           // For native device only.
                           // This version can support self-signed certificates.
                           // final ServerResponse res =
-                          //     await UtilHttpsForNative.post(
+                          //     await HttpsServiceForNative.post(
                           //         postingDataURL,
                           //         {"test": "test params"},
                           //         EnumPostEncodeType.json,

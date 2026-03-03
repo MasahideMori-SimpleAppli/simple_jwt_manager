@@ -271,7 +271,7 @@ class ErrorReporter {
 
       // バックエンドに送信。
       try {
-        final response = await UtilHttps.post(
+        final response = await HttpsService.post(
             _endpointUrl!, reportData, EnumPostEncodeType.json,
             jwt: jwt,
             timeout: timeout,

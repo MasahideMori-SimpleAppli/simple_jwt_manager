@@ -1,3 +1,14 @@
+## 1.0.0
+### Breaking Changes
+
+* Renamed `UtilHttps` → `HttpsService`
+* Renamed `UtilHttpsForNative` → `HttpsServiceForNative`
+* Renamed:
+  * `util_https_stub.dart` → `https_service_stub.dart`
+  * `util_https_web.dart` → `https_service_web.dart`
+
+Public API stabilized.
+
 ## 0.0.34
 
 * ErrorReporter and ErrorReporterForNative have been improved so that if the user tries to use it before init has been run, a special message will be printed to debugPrint.

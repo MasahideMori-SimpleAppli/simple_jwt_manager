@@ -223,7 +223,7 @@ class ROPCClient {
       String? name,
       String? nickname,
       Map<String, dynamic>? option}) async {
-    final r = await UtilHttps.post(
+    final r = await HttpsService.post(
         _registerUrl,
         {
           FJsonKeysToServer.username: email,
@@ -274,7 +274,7 @@ class ROPCClient {
   /// * [option] : Other optional parameters.
   Future<ServerResponse> deleteUser(String email, String password,
       {Map<String, dynamic>? option}) async {
-    final r = await UtilHttps.post(
+    final r = await HttpsService.post(
         _deleteUserURL,
         {
           FJsonKeysToServer.username: email,
@@ -347,7 +347,7 @@ class ROPCClient {
   /// in space separated format, e.g. read write, user:follow, etc.
   Future<ServerResponse> signIn(String email, String password,
       {String? scope}) async {
-    final r = await UtilHttps.post(
+    final r = await HttpsService.post(
         _signInUrl,
         {
           FJsonKeysToServer.grantType: FGrantType.password,
@@ -412,7 +412,7 @@ class ROPCClient {
       FJsonKeysToServer.tokenTypeHint: FJsonKeysToServer.accessToken,
       FJsonKeysToServer.accessToken: _accessToken,
     };
-    final r = await UtilHttps.post(
+    final r = await HttpsService.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
         timeout: _timeout, adjustTiming: false, charset: charset);
     switch (r.resultStatus) {
@@ -440,7 +440,7 @@ class ROPCClient {
       FJsonKeysToServer.tokenTypeHint: FJsonKeysToServer.refreshToken,
       FJsonKeysToServer.refreshToken: _refreshToken,
     };
-    final r = await UtilHttps.post(
+    final r = await HttpsService.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
         timeout: _timeout, adjustTiming: false, charset: charset);
     switch (r.resultStatus) {
@@ -501,7 +501,7 @@ class ROPCClient {
       clearToken();
       return UtilServerResponse.signInRequired();
     }
-    final r = await UtilHttps.post(
+    final r = await HttpsService.post(
         _refreshUrl,
         {
           FJsonKeysToServer.grantType: FGrantType.refreshToken,
