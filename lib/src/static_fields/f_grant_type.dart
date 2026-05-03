@@ -1,6 +1,6 @@
 class FGrantType {
-  static String authorizationCode = "authorization_code";
-  static String clientCredentials = "client_credentials";
-  static String password = "password";
-  static String refreshToken = "refresh_token";
+  static const String authorizationCode = "authorization_code";
+  static const String clientCredentials = "client_credentials";
+  static const String password = "password";
+  static const String refreshToken = "refresh_token";
 }

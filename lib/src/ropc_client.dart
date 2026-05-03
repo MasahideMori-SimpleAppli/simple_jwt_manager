@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:simple_jwt_manager/simple_jwt_manager.dart';
+import 'package:simple_https_service/simple_https_service.dart';
+import 'package:simple_jwt_manager/src/ropc_config.dart';
+import 'package:simple_jwt_manager/src/stream/enum_auth_status.dart';
+import 'package:simple_jwt_manager/src/stream/ropc_auth_stream.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_grant_type.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_json_keys_from_server.dart';
 import 'package:simple_jwt_manager/src/static_fields/f_json_keys_to_server.dart';
@@ -236,7 +239,11 @@ class ROPCClient {
         EnumPostEncodeType.json,
         timeout: _timeout,
         adjustTiming: false,
-        charset: charset);
+        charset: charset,
+        retryIf: ROPCConfig().retryCondition,
+        maxRetries: ROPCConfig().maxRetries,
+        baseDelay: ROPCConfig().baseDelay,
+        maxJitter: ROPCConfig().maxJitter);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         try {
@@ -284,7 +291,11 @@ class ROPCClient {
         EnumPostEncodeType.json,
         timeout: _timeout,
         adjustTiming: false,
-        charset: charset);
+        charset: charset,
+        retryIf: ROPCConfig().retryCondition,
+        maxRetries: ROPCConfig().maxRetries,
+        baseDelay: ROPCConfig().baseDelay,
+        maxJitter: ROPCConfig().maxJitter);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         clearToken();
@@ -358,7 +369,11 @@ class ROPCClient {
         EnumPostEncodeType.urlEncoded,
         timeout: _timeout,
         adjustTiming: false,
-        charset: charset);
+        charset: charset,
+        retryIf: ROPCConfig().retryCondition,
+        maxRetries: ROPCConfig().maxRetries,
+        baseDelay: ROPCConfig().baseDelay,
+        maxJitter: ROPCConfig().maxJitter);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         // トークンを取得して保存
@@ -414,7 +429,13 @@ class ROPCClient {
     };
     final r = await HttpsService.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
-        timeout: _timeout, adjustTiming: false, charset: charset);
+        timeout: _timeout,
+        adjustTiming: false,
+        charset: charset,
+        retryIf: ROPCConfig().retryCondition,
+        maxRetries: ROPCConfig().maxRetries,
+        baseDelay: ROPCConfig().baseDelay,
+        maxJitter: ROPCConfig().maxJitter);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         _updateJWTBuff({
@@ -442,7 +463,13 @@ class ROPCClient {
     };
     final r = await HttpsService.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
-        timeout: _timeout, adjustTiming: false, charset: charset);
+        timeout: _timeout,
+        adjustTiming: false,
+        charset: charset,
+        retryIf: ROPCConfig().retryCondition,
+        maxRetries: ROPCConfig().maxRetries,
+        baseDelay: ROPCConfig().baseDelay,
+        maxJitter: ROPCConfig().maxJitter);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         _updateJWTBuff({FJsonKeysFromServer.refreshToken: null});
@@ -510,7 +537,11 @@ class ROPCClient {
         EnumPostEncodeType.urlEncoded,
         timeout: _timeout,
         adjustTiming: false,
-        charset: charset);
+        charset: charset,
+        retryIf: ROPCConfig().retryCondition,
+        maxRetries: ROPCConfig().maxRetries,
+        baseDelay: ROPCConfig().baseDelay,
+        maxJitter: ROPCConfig().maxJitter);
     switch (r.resultStatus) {
       case EnumServerResponseStatus.success:
         try {

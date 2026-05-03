@@ -1,12 +1,6 @@
-// import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:simple_https_service/simple_https_service.dart';
 import 'package:simple_jwt_manager/simple_jwt_manager.dart';
-// import 'dart:convert';
-
-// TODO select reporter version.
-late final ErrorReporter eReporter; // web or native
-// late final ErrorReporterForNative eReporter; // native, use self-signed certificates
 
 // TODO select client version.
 late final ROPCClient ropcClient; // web or native
@@ -17,42 +11,24 @@ late final ROPCClient ropcClient; // web or native
 final ROPCAuthStream authStream = ROPCAuthStream();
 
 // TODO: Please make sure to rewrite this URL.
-const String registerURL = "https://your end point url";
-const String signInURL = "https://your end point url";
-const String refreshURL = "https://your end point url";
-const String signOutURL = "https://your end point url";
-const String deleteUserURL = "https://your end point url";
+const String registerURL = "https://your-endpoint.example.com/register";
+const String signInURL = "https://your-endpoint.example.com/sign-in";
+const String refreshURL = "https://your-endpoint.example.com/refresh";
+const String signOutURL = "https://your-endpoint.example.com/sign-out";
+const String deleteUserURL = "https://your-endpoint.example.com/delete-user";
 // URL for posting data with JWT in auth header.
-const String postingDataURL = "https://your end point url";
-const String errorReportURL = "https://your end point url";
+const String postingDataURL = "https://your-endpoint.example.com/data";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Error report option.
-  // For web or native device.
-  ErrorReporter().init(
-      endpointUrl: errorReportURL,
-      appVersion: "1.0.0",
-      extraInfo: {"platform": "web"});
-
-  // Set this to false if you don't want to send an error until
-  // you have the user's permission,
-  // then set it to true once permission has been granted.
-  ErrorReporter().allowReporting = true;
-
-  // For native device only.
-  // This version can support self-signed certificates.
-  // ErrorReporterForNative().init(
-  //     endpointUrl: errorReportURL,
-  //     appVersion: "1.0.0",
-  //     extraInfo: {"platform" : "Android etc.."},
-  //     badCertificateCallback: (X509Certificate cert, String host, int port) {
-  //       // TODO
-  //       // The condition is checked here, and if it returns true,
-  //       // self-signed certificates are allowed.
-  //       return true;
-  //     });
+  // Optional: configure retry behavior for JWT operations independently of
+  // simple_https_service globals. By default, no retries are attempted.
+  // ROPCConfig().maxRetries = 3;
+  // ROPCConfig().retryCondition = (url, res, error) {
+  //   return res.resultStatus == EnumServerResponseStatus.serverError ||
+  //       error != null;
+  // };
 
   Map<String, dynamic>? savedData;
   // TODO: If necessary, restore the token in your own way.
@@ -146,7 +122,7 @@ class _MyAppState extends State<MyApp> {
               children: [
                 Container(
                     width: 320,
-                    margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    margin: EdgeInsets.zero,
                     child: TextField(
                       controller: _tecID,
                       decoration:
@@ -170,19 +146,18 @@ class _MyAppState extends State<MyApp> {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
-                              // TODO Please add a process for when user registration is complete.
+                              // TODO: Handle user registration complete.
                               break;
                             case EnumServerResponseStatus.timeout:
-                              // TODO: What happens when a timeout occurs.
+                              // TODO: Handle timeout.
                               break;
                             case EnumServerResponseStatus.serverError:
-                              // TODO: Handle server side error case.
+                              // TODO: Handle server error.
                               break;
                             case EnumServerResponseStatus.otherError:
-                              // TODO: Handle other error case.
+                              // TODO: Handle other error.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // That doesn't usually happen here.
                               throw Exception();
                           }
                         });
@@ -199,22 +174,20 @@ class _MyAppState extends State<MyApp> {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
-                              // TODO Please add a process for when user registration is complete.
                               // If you are working with streams, do the following:
                               ropcClient.updateStream(authStream);
                               break;
                             case EnumServerResponseStatus.timeout:
-                              // TODO: What happens when a timeout occurs.
+                              // TODO: Handle timeout.
                               break;
                             case EnumServerResponseStatus.serverError:
-                              // TODO: Handle server side error case.
+                              // TODO: Handle server error.
                               break;
                             case EnumServerResponseStatus.otherError:
-                              // TODO: Handle other error case.
+                              // TODO: Handle other error.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // TODO: Handle other error case.
-                              // The username or password is incorrect.
+                              // TODO: The username or password is incorrect.
                               break;
                           }
                         });
@@ -229,21 +202,19 @@ class _MyAppState extends State<MyApp> {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
-                              // signOut completed.
                               // If you are working with streams, do the following:
                               ropcClient.updateStream(authStream);
                               break;
                             case EnumServerResponseStatus.timeout:
-                              // TODO: What happens when a timeout occurs.
+                              // TODO: Handle timeout.
                               break;
                             case EnumServerResponseStatus.serverError:
-                              // TODO: Handle server side error case.
+                              // TODO: Handle server error.
                               break;
                             case EnumServerResponseStatus.otherError:
-                              // TODO: Handle other error case.
+                              // TODO: Handle other error.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // That doesn't usually happen here.
                               throw Exception();
                           }
                         });
@@ -260,22 +231,20 @@ class _MyAppState extends State<MyApp> {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
-                              // delete user completed.
                               // If you are working with streams, do the following:
                               ropcClient.updateStream(authStream);
                               break;
                             case EnumServerResponseStatus.timeout:
-                              // TODO: What happens when a timeout occurs.
+                              // TODO: Handle timeout.
                               break;
                             case EnumServerResponseStatus.serverError:
-                              // TODO: Handle server side error case.
+                              // TODO: Handle server error.
                               break;
                             case EnumServerResponseStatus.otherError:
-                              // TODO: Handle other error case.
+                              // TODO: Handle other error.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // TODO: Handle other error case.
-                              // The username or password is incorrect.
+                              // TODO: The username or password is incorrect.
                               break;
                           }
                         });
@@ -292,24 +261,20 @@ class _MyAppState extends State<MyApp> {
                           debugPrint(v.toString());
                           switch (v.resultStatus) {
                             case EnumServerResponseStatus.success:
-                              // completed.
                               break;
                             case EnumServerResponseStatus.timeout:
-                              // TODO: What happens when a timeout occurs.
+                              // TODO: Handle timeout.
                               break;
                             case EnumServerResponseStatus.serverError:
-                              // TODO: Handle server side error case.
+                              // TODO: Handle server error.
                               break;
                             case EnumServerResponseStatus.otherError:
-                              // TODO: Handle other error case.
+                              // TODO: Handle other error.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // TODO:
-                              debugPrint("SignIn required");
-                              // goto signIn page.
+                              // TODO: goto signIn page.
                               // If you are working with streams, do the following:
                               ropcClient.updateStream(authStream);
-                              break;
                           }
                         });
                       },
@@ -347,36 +312,28 @@ class _MyAppState extends State<MyApp> {
                           //   return true;
                           // });
 
-                          // Server response
                           debugPrint("Server response: $res");
                           switch (res.resultStatus) {
                             case EnumServerResponseStatus.success:
-                              // TODO: Handle this case.
+                              // TODO: Handle success.
                               break;
                             case EnumServerResponseStatus.timeout:
-                              // TODO: Handle this case.
+                              // TODO: Handle timeout.
                               break;
                             case EnumServerResponseStatus.serverError:
-                              // TODO: Handle this case.
-                              // TODO: You can also use the error reporter for custom error reporting.
-                              // ErrorReporter().reportError("Error detail or Error object", null);
+                              // TODO: Handle server error.
                               break;
                             case EnumServerResponseStatus.otherError:
-                              // TODO: Handle this case.
-                              // TODO: You can also use the error reporter for custom error reporting.
-                              // ErrorReporter().reportError("Error detail or Error object", null);
+                              // TODO: Handle other error.
                               break;
                             case EnumServerResponseStatus.signInRequired:
-                              // TODO The token has expired or was not obtained,
-                              // goto signIn page.
+                              // TODO: The token has expired, goto signIn page.
                               // If you are working with streams, do the following:
                               ropcClient.updateStream(authStream);
-                              break;
                           }
                         } else {
-                          // TODO The token has expired or was not obtained,
                           debugPrint("The token is null.");
-                          // goto signIn page.
+                          // TODO: The token has expired, goto signIn page.
                           // If you are working with streams, do the following:
                           ropcClient.updateStream(authStream);
                         }

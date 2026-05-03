@@ -1,3 +1,23 @@
+## 2.0.0 (2026-05-03)
+### Breaking Changes
+
+* Network-related classes (`HttpsService`, `HttpsServiceForNative`, `TimingManager`, `ServerResponse`, `RetryConfig`, and related enums/utilities) have been moved to the `simple_https_service` package.
+* Error reporting classes (`ErrorReporter`, `ErrorReporterForNative`, `ErrorReportObj`) have been moved to the `simple_error_reporter` package and are no longer a dependency of this package.
+  Add `simple_error_reporter` to your `pubspec.yaml` separately if needed.
+* Update your `pubspec.yaml` to add `simple_https_service` as a dependency, and add
+  `import 'package:simple_https_service/simple_https_service.dart';` where needed.
+
+### New Features
+
+* Added `ROPCConfig` singleton for independent retry control.
+  Set `maxRetries`, `baseDelay`, `maxJitter`, and `retryCondition` to configure
+  retry behavior without affecting the global `RetryConfig` in `simple_https_service`.
+
+### Refactoring
+
+* `ropc_client.dart` and `ropc_client_for_native.dart` now import internal dependencies
+  directly instead of through the barrel file.
+
 ## 1.0.0
 ### Breaking Changes
 
