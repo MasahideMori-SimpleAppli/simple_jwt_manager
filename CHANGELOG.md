@@ -1,3 +1,7 @@
+## 2.0.1 (2026-05-04)
+
+* Redeploy to fix pub.dev scores affected by a static analysis outage.
+
 ## 2.0.0 (2026-05-03)
 ### Breaking Changes
 
