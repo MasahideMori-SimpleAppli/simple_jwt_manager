@@ -1,3 +1,15 @@
+## 2.0.2 (2026-05-15)
+
+* Bumped `simple_https_service` constraint to `^2.0.0` to follow the
+  upstream package's 2.0.0 release, which added the
+  `EnumServerResponseStatus.cancelled` value.
+* Added `case EnumServerResponseStatus.cancelled` to every internal
+  `switch` on the response status in `ROPCClient` and
+  `ROPCClientForNative`. A cancelled response is returned through as-is
+  without mutating token state (`clearToken` is not called), since
+  cancellation is a caller-initiated event rather than a server outcome.
+* Updated `example/main.dart` to cover the new `cancelled` case.
+
 ## 2.0.1 (2026-05-04)
 
 * Redeploy to fix pub.dev scores affected by a static analysis outage.

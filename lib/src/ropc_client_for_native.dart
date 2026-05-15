@@ -275,6 +275,7 @@ class ROPCClientForNative {
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.otherError:
       case EnumServerResponseStatus.signInRequired:
+      case EnumServerResponseStatus.cancelled:
         return r;
     }
   }
@@ -322,6 +323,7 @@ class ROPCClientForNative {
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.otherError:
       case EnumServerResponseStatus.signInRequired:
+      case EnumServerResponseStatus.cancelled:
         return r;
     }
   }
@@ -409,6 +411,7 @@ class ROPCClientForNative {
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.otherError:
       case EnumServerResponseStatus.signInRequired:
+      case EnumServerResponseStatus.cancelled:
         return r;
     }
   }
@@ -435,6 +438,7 @@ class ROPCClientForNative {
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.otherError:
       case EnumServerResponseStatus.signInRequired:
+      case EnumServerResponseStatus.cancelled:
         return res;
     }
   }
@@ -471,6 +475,7 @@ class ROPCClientForNative {
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.otherError:
       case EnumServerResponseStatus.signInRequired:
+      case EnumServerResponseStatus.cancelled:
         return r;
     }
   }
@@ -502,6 +507,7 @@ class ROPCClientForNative {
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.otherError:
       case EnumServerResponseStatus.signInRequired:
+      case EnumServerResponseStatus.cancelled:
         return r;
     }
   }
@@ -589,6 +595,7 @@ class ROPCClientForNative {
       case EnumServerResponseStatus.serverError:
       case EnumServerResponseStatus.timeout:
       case EnumServerResponseStatus.otherError:
+      case EnumServerResponseStatus.cancelled:
         return r;
     }
   }

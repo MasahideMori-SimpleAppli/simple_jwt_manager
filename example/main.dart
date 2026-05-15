@@ -159,6 +159,9 @@ class _MyAppState extends State<MyApp> {
                               break;
                             case EnumServerResponseStatus.signInRequired:
                               throw Exception();
+                            case EnumServerResponseStatus.cancelled:
+                              // TODO: Handle cancellation.
+                              break;
                           }
                         });
                       },
@@ -189,6 +192,9 @@ class _MyAppState extends State<MyApp> {
                             case EnumServerResponseStatus.signInRequired:
                               // TODO: The username or password is incorrect.
                               break;
+                            case EnumServerResponseStatus.cancelled:
+                              // TODO: Handle cancellation.
+                              break;
                           }
                         });
                       },
@@ -216,6 +222,9 @@ class _MyAppState extends State<MyApp> {
                               break;
                             case EnumServerResponseStatus.signInRequired:
                               throw Exception();
+                            case EnumServerResponseStatus.cancelled:
+                              // TODO: Handle cancellation.
+                              break;
                           }
                         });
                       },
@@ -246,6 +255,9 @@ class _MyAppState extends State<MyApp> {
                             case EnumServerResponseStatus.signInRequired:
                               // TODO: The username or password is incorrect.
                               break;
+                            case EnumServerResponseStatus.cancelled:
+                              // TODO: Handle cancellation.
+                              break;
                           }
                         });
                       },
@@ -275,6 +287,10 @@ class _MyAppState extends State<MyApp> {
                               // TODO: goto signIn page.
                               // If you are working with streams, do the following:
                               ropcClient.updateStream(authStream);
+                              break;
+                            case EnumServerResponseStatus.cancelled:
+                              // TODO: Handle cancellation.
+                              break;
                           }
                         });
                       },
@@ -330,6 +346,10 @@ class _MyAppState extends State<MyApp> {
                               // TODO: The token has expired, goto signIn page.
                               // If you are working with streams, do the following:
                               ropcClient.updateStream(authStream);
+                              break;
+                            case EnumServerResponseStatus.cancelled:
+                              // TODO: Handle cancellation.
+                              break;
                           }
                         } else {
                           debugPrint("The token is null.");
