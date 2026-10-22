@@ -22,8 +22,8 @@ v2.0.0以降、ネットワーク機能は `simple_https_service` に分離さ�
 
 ```yaml
 dependencies:
-  simple_jwt_manager: ^2.0.0
-  simple_https_service: ^1.0.0
+  simple_jwt_manager: ^2.1.0
+  simple_https_service: ^2.1.0
 ```
 
 エラー報告が必要な場合は [`simple_error_reporter`](https://pub.dev/packages/simple_error_reporter) を別途追加してください。
@@ -38,7 +38,7 @@ dependencies:
 
 2つの実装が用意されています：
 - `ROPCClient`: WebとNativeの両プラットフォームで動作します。
-- `ROPCClientForNative`: Native専用で、`badCertificateCallback`による自己署名証明書のサポートがあります。
+- `ROPCClientForNative`: Native専用で、`securityContext` または `badCertificateCallback` による自己署名証明書のサポートがあります。
 
 ## 使い方
 
@@ -124,6 +124,39 @@ authStream.getStream().listen((EnumAuthStatus status) {
 // サインイン・サインアウト後にストリームを更新:
 ropcClient.updateStream(authStream);
 ```
+
+### 自己署名証明書（Native専用）
+
+`ROPCClientForNative` は `securityContext` と `badCertificateCallback` を受け取り、`simple_https_service` の `HttpsServiceForNative` に渡します。
+サーバー証明書（PEM形式。**秘密鍵は絶対に含めないこと**）をassetsに同梱し、条件に応じて以下のいずれかの方法を選びます。
+詳細は [`simple_https_service`](https://pub.dev/packages/simple_https_service) のREADMEを参照してください。
+
+| 条件 | 方法 |
+|---|---|
+| サーバーのホスト名またはIPが固定で、証明書のSANに含められる（推奨） | `securityContext` + `UtilSecurityContext` |
+| サーバーのIPが変わる可能性があり（DHCPなど）、SANを固定できない | `badCertificateCallback` + `CertificatePinner` |
+
+```dart
+import 'package:simple_https_service/simple_https_service.dart';
+import 'package:simple_jwt_manager/simple_jwt_manager.dart';
+
+final ropcClient = ROPCClientForNative(
+  registerURL: 'https://192.168.1.1/register',
+  signInURL: 'https://192.168.1.1/sign-in',
+  refreshURL: 'https://192.168.1.1/refresh',
+  signOutURL: 'https://192.168.1.1/sign-out',
+  deleteUserURL: 'https://192.168.1.1/delete-user',
+  // 推奨：通常の検証が行われます（ホスト名や有効期限も検証）。
+  securityContext:
+      await UtilSecurityContext.fromAsset('assets/certs/local_server.pem'),
+  // SANを固定できない場合は代わりにこちらを使用します：
+  // badCertificateCallback:
+  //     (await CertificatePinner.fromAsset('assets/certs/local_server.pem')).check,
+);
+```
+
+> **Warning**  
+> `badCertificateCallback` で無条件に `true` を返すとSSL検証が無視されます。本番環境（Releaseモード）での利用や、信頼できないネットワーク環境での使用は避けてください。
 
 ### リトライの設定
 

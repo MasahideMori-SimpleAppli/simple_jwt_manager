@@ -35,6 +35,7 @@ class ROPCClientForNative {
   late final String _deleteUserURL;
   late final bool Function(X509Certificate cert, String host, int port)?
       _badCertificateCallback;
+  late final SecurityContext? _securityContext;
   late final Duration _connectionTimeout;
   late final Duration _responseTimeout;
   late final int refreshMarginMs;
@@ -65,8 +66,19 @@ class ROPCClientForNative {
   /// * [charset] : Use this when you want to explicitly specify the charset in
   /// the HTTP header. If null, it will automatically be set to utf-8. Also,
   /// if you enter an empty string, no specification will be made.
-  /// * [badCertificateCallback] : Returns true if you are using a local server
-  /// that uses a self-signed certificate.
+  /// * [badCertificateCallback] : A callback invoked when an invalid SSL certificate
+  /// is encountered. Return `true` to accept the certificate (e.g., for self-signed
+  /// certificates during local development), or `false` to reject it.
+  /// CertificatePinner of simple_https_service can be used here.
+  ///
+  ///   **Warning:** Unconditionally returning `true` bypasses SSL verification and
+  ///   introduces security risks in production environments.
+  ///
+  /// * [securityContext] : The SecurityContext used for TLS verification.
+  /// If null, SecurityContext.defaultContext is used.
+  /// To trust a self-signed certificate while keeping normal verification
+  /// (including host name and expiry), use UtilSecurityContext of
+  /// simple_https_service.
   /// * [savedData] : If there is token information previously saved by
   /// this class's toDict function, you can restore the token by setting it.
   /// * [refreshMarginMs] : The access token expiration time will be estimated
@@ -90,6 +102,7 @@ class ROPCClientForNative {
       this.charset,
       bool Function(X509Certificate cert, String host, int port)?
           badCertificateCallback,
+      SecurityContext? securityContext,
       Map<String, dynamic>? savedData,
       this.refreshMarginMs = 30 * 1000,
       this.updateJwtCallback}) {
@@ -99,6 +112,7 @@ class ROPCClientForNative {
     _revokeURL = UtilCheckURL.validateHttpsUrl(signOutURL);
     _deleteUserURL = UtilCheckURL.validateHttpsUrl(deleteUserURL);
     _badCertificateCallback = badCertificateCallback;
+    _securityContext = securityContext;
     _connectionTimeout = connectionTimeout ?? const Duration(seconds: 10);
     _responseTimeout = responseTimeout ?? const Duration(minutes: 1);
     if (savedData != null) {
@@ -252,6 +266,7 @@ class ROPCClientForNative {
         },
         EnumPostEncodeType.json,
         badCertificateCallback: _badCertificateCallback,
+        securityContext: _securityContext,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
         adjustTiming: false,
@@ -307,6 +322,7 @@ class ROPCClientForNative {
         },
         EnumPostEncodeType.json,
         badCertificateCallback: _badCertificateCallback,
+        securityContext: _securityContext,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
         adjustTiming: false,
@@ -388,6 +404,7 @@ class ROPCClientForNative {
         },
         EnumPostEncodeType.urlEncoded,
         badCertificateCallback: _badCertificateCallback,
+        securityContext: _securityContext,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
         adjustTiming: false,
@@ -454,6 +471,7 @@ class ROPCClientForNative {
     final r = await HttpsServiceForNative.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
         badCertificateCallback: _badCertificateCallback,
+        securityContext: _securityContext,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
         adjustTiming: false,
@@ -491,6 +509,7 @@ class ROPCClientForNative {
     final r = await HttpsServiceForNative.post(
         _revokeURL, target, EnumPostEncodeType.urlEncoded,
         badCertificateCallback: _badCertificateCallback,
+        securityContext: _securityContext,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
         adjustTiming: false,
@@ -566,6 +585,7 @@ class ROPCClientForNative {
         },
         EnumPostEncodeType.urlEncoded,
         badCertificateCallback: _badCertificateCallback,
+        securityContext: _securityContext,
         connectionTimeout: _connectionTimeout,
         responseTimeout: _responseTimeout,
         adjustTiming: false,

@@ -6,6 +6,8 @@ import 'package:simple_jwt_manager/simple_jwt_manager.dart';
 late final ROPCClient ropcClient; // web or native
 // late final ROPCClientForNative
 //     ropcClient; // native, use self-signed certificates
+// late final SecurityContext
+//     securityContext; // native, trust a bundled self-signed certificate
 
 // You can use this if you want to redirect with GoRouter.
 final ROPCAuthStream authStream = ROPCAuthStream();
@@ -54,18 +56,21 @@ void main() async {
 
   // For native device only.
   // This version can support self-signed certificates.
+  // Recommended: trust the bundled certificate with normal verification
+  // (host name and expiry are checked).
+  // If the certificate's SAN cannot be fixed (e.g. the server's IP changes),
+  // use badCertificateCallback with CertificatePinner instead.
+  // Warning: Unconditionally returning true in badCertificateCallback
+  // bypasses SSL verification. Avoid it in production.
+  // securityContext = await UtilSecurityContext.fromAsset(
+  //     'assets/certs/local_server.pem');
   // ropcClient = ROPCClientForNative(
   //     registerURL: registerURL,
   //     signInURL: signInURL,
   //     refreshURL: refreshURL,
   //     signOutURL: signOutURL,
   //     deleteUserURL: deleteUserURL,
-  //     badCertificateCallback: (X509Certificate cert, String host, int port) {
-  //       // TODO
-  //       // The condition is checked here, and if it returns true,
-  //       // self-signed certificates are allowed.
-  //       return true;
-  //     },
+  //     securityContext: securityContext,
   //     savedData: savedData,
   //     updateJwtCallback: (Map<String, dynamic> savedData) {
   //       // TODO
@@ -319,14 +324,8 @@ class _MyAppState extends State<MyApp> {
                           //         postingDataURL,
                           //         {"test": "test params"},
                           //         EnumPostEncodeType.json,
-                          //         jwt: jwt, badCertificateCallback:
-                          //             (X509Certificate cert, String host,
-                          //                 int port) {
-                          //   // TODO
-                          //   // The condition is checked here, and if it returns true,
-                          //   // self-signed certificates are allowed.
-                          //   return true;
-                          // });
+                          //         jwt: jwt,
+                          //         securityContext: securityContext);
 
                           debugPrint("Server response: $res");
                           switch (res.resultStatus) {

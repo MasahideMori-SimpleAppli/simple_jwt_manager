@@ -1,3 +1,13 @@
+## 2.1.0 (2026-10-23)
+
+* Bumped `simple_https_service` constraint to `^2.1.0`.
+* Added `securityContext` parameter to `ROPCClientForNative`. It is passed to every request of `HttpsServiceForNative`.
+  Use `UtilSecurityContext` of `simple_https_service` to trust a self-signed certificate while keeping normal TLS verification (recommended).
+  If the certificate's SAN cannot be fixed (e.g. the server's IP changes), `CertificatePinner` can be used with `badCertificateCallback`.
+* Improved the doc comment of `badCertificateCallback` in `ROPCClientForNative` with a security warning, following `simple_https_service`.
+* Updated README and `example/main.dart`: added a section on self-signed certificates, and updated the example to use the newly available `securityContext`.
+* Fixed the dependency versions in the README installation example.
+
 ## 2.0.2 (2026-05-15)
 
 * Bumped `simple_https_service` constraint to `^2.0.0` to follow the

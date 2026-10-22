@@ -23,8 +23,8 @@ Add both to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  simple_jwt_manager: ^2.0.0
-  simple_https_service: ^1.0.0
+  simple_jwt_manager: ^2.1.0
+  simple_https_service: ^2.1.0
 ```
 
 For error reporting, add [`simple_error_reporter`](https://pub.dev/packages/simple_error_reporter) separately.
@@ -39,7 +39,7 @@ For error reporting, add [`simple_error_reporter`](https://pub.dev/packages/simp
 
 Two implementations are provided:
 - `ROPCClient`: Works on both web and native platforms.
-- `ROPCClientForNative`: Native-only, with support for self-signed certificates via `badCertificateCallback`.
+- `ROPCClientForNative`: Native-only, with support for self-signed certificates via `securityContext` or `badCertificateCallback`.
 
 ## Usage
 
@@ -125,6 +125,39 @@ authStream.getStream().listen((EnumAuthStatus status) {
 // Update the stream after sign-in or sign-out:
 ropcClient.updateStream(authStream);
 ```
+
+### Self-signed certificates (Native only)
+
+`ROPCClientForNative` accepts `securityContext` and `badCertificateCallback`, which are passed to `HttpsServiceForNative` of `simple_https_service`.
+Bundle the server certificate (PEM, **never the private key**) in your assets, then choose one of the following methods.
+See the README of [`simple_https_service`](https://pub.dev/packages/simple_https_service) for details.
+
+| Condition | Method |
+|---|---|
+| The server's host name or IP is fixed and included in the certificate's SAN (recommended) | `securityContext` + `UtilSecurityContext` |
+| The server's IP may change (e.g. DHCP), so the SAN cannot be fixed | `badCertificateCallback` + `CertificatePinner` |
+
+```dart
+import 'package:simple_https_service/simple_https_service.dart';
+import 'package:simple_jwt_manager/simple_jwt_manager.dart';
+
+final ropcClient = ROPCClientForNative(
+  registerURL: 'https://192.168.1.1/register',
+  signInURL: 'https://192.168.1.1/sign-in',
+  refreshURL: 'https://192.168.1.1/refresh',
+  signOutURL: 'https://192.168.1.1/sign-out',
+  deleteUserURL: 'https://192.168.1.1/delete-user',
+  // Recommended: normal verification (host name and expiry are checked).
+  securityContext:
+      await UtilSecurityContext.fromAsset('assets/certs/local_server.pem'),
+  // If the SAN cannot be fixed, use this instead:
+  // badCertificateCallback:
+  //     (await CertificatePinner.fromAsset('assets/certs/local_server.pem')).check,
+);
+```
+
+> **Warning**  
+> Unconditionally returning `true` in `badCertificateCallback` bypasses SSL verification. Avoid using this in production environments (Release mode) or on untrusted networks.
 
 ### Retry configuration
 
