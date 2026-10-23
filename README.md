@@ -23,8 +23,8 @@ Add both to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  simple_jwt_manager: ^2.1.0
-  simple_https_service: ^2.1.0
+  simple_jwt_manager: ^3.0.0
+  simple_https_service: ^3.0.0
 ```
 
 For error reporting, add [`simple_error_reporter`](https://pub.dev/packages/simple_error_reporter) separately.

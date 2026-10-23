@@ -1,3 +1,11 @@
+## 3.0.0 (2026-10-23)
+
+* Bumped `simple_https_service` constraint to `^3.0.0`. No API changes in this package.
+  Note that `simple_https_service` 3.0.0 includes a breaking change:
+  `CertificatePinner` now rejects certificates outside their validity period by default
+  (pass `checkValidity: false` to keep the previous behavior).
+  It also added DER support with automatic format detection (PEM / DER).
+
 ## 2.1.0 (2026-10-23)
 
 * Bumped `simple_https_service` constraint to `^2.1.0`.

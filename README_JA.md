@@ -22,8 +22,8 @@ v2.0.0以降、ネットワーク機能は `simple_https_service` に分離さ�
 
 ```yaml
 dependencies:
-  simple_jwt_manager: ^2.1.0
-  simple_https_service: ^2.1.0
+  simple_jwt_manager: ^3.0.0
+  simple_https_service: ^3.0.0
 ```
 
 エラー報告が必要な場合は [`simple_error_reporter`](https://pub.dev/packages/simple_error_reporter) を別途追加してください。
