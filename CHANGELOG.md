@@ -1,3 +1,45 @@
+## 4.0.0 (2026-11-03)
+
+This release aligns the behavior more strictly with RFC 6749 (OAuth 2.0) and RFC 7009 (Token Revocation).
+Before upgrading, check the following:
+* Server: the revocation endpoint must read the token from the `token` parameter.
+* Server / App: a token endpoint that returns HTTP 400 `invalid_grant` is now treated as `signInRequired`.
+* App: if your server does not return `expires_in`, call `refreshAndGetNewToken` when a resource server rejects the token.
+
+* **Breaking (server side):** Fixed the revocation request parameters to follow RFC 7009.
+  `revokeAccessToken`, `revokeRefreshToken`, and `signOut` of `ROPCClient` and `ROPCClientForNative`
+  now send the token as `token` (previously `access_token` / `refresh_token`), together with `token_type_hint`.
+  Servers that read the old parameter names must be updated to read `token`.
+* Revocation of a token that the client does not hold no longer sends a request.
+  It is treated as successfully revoked, and a success `ServerResponse` with null `response` and `resBody` is returned.
+  This prevents `signOut` from failing when the server does not issue a refresh token.
+* The revocation response body is no longer parsed as JSON (RFC 7009 Section 2.2: the client ignores the body).
+  Previously, an RFC-compliant `200` response with an empty body was treated as `otherError`, and the tokens were not cleared.
+  `resBody` of the revocation result is now `{"r": <body text>}` instead of the decoded JSON.
+* Added an optional `clientId` parameter to `ROPCClient` and `ROPCClientForNative`.
+  If set, it is sent as `client_id` with sign-in, refresh, and revocation requests (RFC 6749 / RFC 7009).
+  If null (default), `client_id` is not sent.
+* **Breaking:** An HTTP 400 `invalid_grant` error (RFC 6749 Section 5.2) from the token endpoint is now treated as `signInRequired`.
+  Previously only HTTP 401 was, so wrong credentials in `signIn` returned `serverError`,
+  and an expired or revoked refresh token in `refreshAndGetNewToken` returned `serverError` without clearing the tokens,
+  leaving the client in a signed-in state. The refresh case now clears the tokens. HTTP 401 is still treated as before.
+* **Breaking:** If the server does not return `expires_in` (it is optional in RFC 6749 Section 5.1), the access token is now treated as valid.
+  Previously it was treated as always expired, so every `getToken` call triggered a refresh,
+  and without a refresh token the client was signed out right after signing in.
+  In this case, call `refreshAndGetNewToken` when a resource server rejects the token.
+* `signIn` no longer sends an empty `scope` parameter when `scope` is null.
+* If the token response omits `scope`, the requested scope (sign-in) or the previous scope (refresh) is now held,
+  as specified in RFC 6749 Sections 5.1 and 6. Previously `getAccessTokenScopeBuff` returned null in this case.
+* `signIn` now returns `otherError` instead of throwing when the token response cannot be parsed.
+  `expires_in` is now also accepted as a decimal number or a numeric string,
+  and a parse failure no longer leaves the tokens partially updated.
+* Fixed the doc comment of `register`: `expires_in` is in seconds, not milliseconds.
+* Fixed `ROPCConfig` so that no retries occur when `retryCondition` is null, as documented.
+  Previously, if `retryCondition` was null and `maxRetries` was greater than 0,
+  `RetryConfig().defaultCondition` of `simple_https_service` was used instead.
+* Internal refactoring: the common logic of `ROPCClient` and `ROPCClientForNative` has been moved to an internal base class,
+  and each class now only implements how requests are sent. The public API and the `toDict` format are unchanged.
+
 ## 3.0.0 (2026-10-23)
 
 * Bumped `simple_https_service` constraint to `^3.0.0`. No API changes in this package.

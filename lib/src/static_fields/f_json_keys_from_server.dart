@@ -6,4 +6,6 @@ class FJsonKeysFromServer {
   static const String refreshToken = "refresh_token";
   // 要求したスコープと差異がある場合などに必要になる。
   static const String scope = "scope";
+  // RFC 6749 5.2節のエラーレスポンスで、エラーコードが格納されるキー。
+  static const String error = "error";
 }

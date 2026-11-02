@@ -15,5 +15,10 @@ class FJsonKeysToServer {
   // トークン類
   static const String accessToken = "access_token";
   static const String refreshToken = "refresh_token";
+  // RFC 7009の失効リクエストで、失効対象のトークンを格納するキー。
+  static const String token = "token";
+  // RFC 7009の失効リクエストで、tokenの種類を示すヒント。値はaccessTokenかrefreshToken。
   static const String tokenTypeHint = "token_type_hint";
+  // RFC 6749のクライアント識別子。
+  static const String clientId = "client_id";
 }

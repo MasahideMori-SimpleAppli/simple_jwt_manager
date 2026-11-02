@@ -22,7 +22,7 @@ v2.0.0以降、ネットワーク機能は `simple_https_service` に分離さ�
 
 ```yaml
 dependencies:
-  simple_jwt_manager: ^3.0.0
+  simple_jwt_manager: ^4.0.0
   simple_https_service: ^3.0.0
 ```
 
@@ -56,6 +56,8 @@ void main() async {
     refreshURL: 'https://your-endpoint.example.com/refresh',
     signOutURL: 'https://your-endpoint.example.com/sign-out',
     deleteUserURL: 'https://your-endpoint.example.com/delete-user',
+    // 任意。設定すると、サインイン・リフレッシュ・サインアウトのリクエストに client_id として送信されます。
+    // clientId: 'your-client-id',
     updateJwtCallback: (savedData) async {
       // トークンが変更または削除されるたびに呼び出されます。
       // ここでローカルストレージへの保存や削除処理を行ってください。
@@ -83,6 +85,16 @@ switch (res.resultStatus) {
 // サインアウト
 await ropcClient.signOut();
 ```
+
+`signOut()` は、リフレッシュトークン、アクセストークンの順に失効処理を行います。
+各失効リクエストは RFC 7009 に従い、`application/x-www-form-urlencoded` で `signOutURL` に送信されます：
+
+```
+token=<トークン>&token_type_hint=refresh_token   （または access_token）
+```
+
+`clientId` を設定している場合は、`client_id=<clientId>` も含まれます。
+クライアントが保持していないトークンは送信されず、失効成功として扱われます。
 
 ### 認証付きリクエスト
 

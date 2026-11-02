@@ -23,7 +23,7 @@ Add both to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  simple_jwt_manager: ^3.0.0
+  simple_jwt_manager: ^4.0.0
   simple_https_service: ^3.0.0
 ```
 
@@ -57,6 +57,8 @@ void main() async {
     refreshURL: 'https://your-endpoint.example.com/refresh',
     signOutURL: 'https://your-endpoint.example.com/sign-out',
     deleteUserURL: 'https://your-endpoint.example.com/delete-user',
+    // Optional. If set, sent as client_id with sign-in, refresh, and sign-out requests.
+    // clientId: 'your-client-id',
     updateJwtCallback: (savedData) async {
       // Called whenever the token changes or is deleted.
       // Save or clear savedData in local storage here.
@@ -84,6 +86,16 @@ switch (res.resultStatus) {
 // Sign out
 await ropcClient.signOut();
 ```
+
+`signOut()` revokes the refresh token and then the access token.
+Each revocation request is sent to `signOutURL` as `application/x-www-form-urlencoded`, following RFC 7009:
+
+```
+token=<token>&token_type_hint=refresh_token   (or access_token)
+```
+
+If `clientId` is set, `client_id=<clientId>` is also included.
+A token that the client does not hold is not sent and is treated as successfully revoked.
 
 ### Authenticated request
 
